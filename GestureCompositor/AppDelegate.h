@@ -10,6 +10,11 @@
 
 @interface AppDelegate : NSObject <NSApplicationDelegate>
 
+@property (strong) AVPlayer * player;
+@property (strong) AVAsset * sourceVideoAsset;
 @property (assign) IBOutlet NSWindow *window;
+@property (weak) IBOutlet NSView *playbackView;
+
+- (IBAction)playPlainVideo:(id)sender;
 
 @end
