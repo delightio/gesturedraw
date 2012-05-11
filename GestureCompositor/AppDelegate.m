@@ -42,11 +42,13 @@
 				break;
 		}
 	}
+	self.sourceVideoAsset = [AVAsset assetWithURL:[NSURL fileURLWithPath:vdoFilePath]];
 
 	// Insert code here to initialize your application
 	self.player = [[AVPlayer alloc] initWithPlayerItem:[AVPlayerItem playerItemWithAsset:_sourceVideoAsset]];
 	
 	AVPlayerLayer * theLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
+	theLayer.frame = _playbackView.bounds;
 	[_playbackView setLayer:theLayer];
 }
 
