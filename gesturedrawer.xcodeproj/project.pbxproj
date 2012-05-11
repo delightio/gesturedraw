@@ -35,6 +35,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A9EAEFE3155D03AB005B17ED /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		A9F1E82F155C34A3001C0C37 /* gesturedrawer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = gesturedrawer; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9F1E833155C34A3001C0C37 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		A9F1E836155C34A3001C0C37 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -83,6 +84,7 @@
 		A9F1E824155C34A3001C0C37 = {
 			isa = PBXGroup;
 			children = (
+				A9EAEFE3155D03AB005B17ED /* README */,
 				A9F1E835155C34A3001C0C37 /* gesturedrawer */,
 				A9F1E84F155C4BBD001C0C37 /* GestureCompositor */,
 				A9F1E832155C34A3001C0C37 /* Frameworks */,
@@ -393,6 +395,7 @@
 				A9F1E840155C34A3001C0C37 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		A9F1E861155C4BBD001C0C37 /* Build configuration list for PBXNativeTarget "GestureCompositor" */ = {
 			isa = XCConfigurationList;
@@ -401,6 +404,7 @@
 				A9F1E863155C4BBD001C0C37 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
