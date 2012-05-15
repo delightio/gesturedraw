@@ -54,6 +54,8 @@ static NSString * DLTouchTimeKey = @"timeInSession";
 	// Insert code here to initialize your application
 	self.playerItem = [AVPlayerItem playerItemWithAsset:_sourceVideoAsset];
 	self.player = [[AVPlayer alloc] initWithPlayerItem:_playerItem];
+	_player.actionAtItemEnd = AVPlayerActionAtItemEndPause;
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleDidPlayNotification:) name:AVPlayerItemDidPlayToEndTimeNotification object:_playerItem];
 	
 	AVPlayerLayer * theLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
 	theLayer.frame = _playbackView.bounds;
@@ -70,6 +72,10 @@ static NSString * DLTouchTimeKey = @"timeInSession";
 	}
 }
 
+- (void)handleDidPlayNotification:(NSNotification *)aNotification {
+    [_player seekToTime:kCMTimeZero];
+}
+
 - (IBAction)playPlainVideo:(id)sender {
 	[_player play];
 }
@@ -79,7 +85,7 @@ static NSString * DLTouchTimeKey = @"timeInSession";
 	CAShapeLayer * shapeLayer = [CAShapeLayer layer];
 	CGPathRef cirPath = CGPathCreateWithEllipseInRect(CGRectMake(0.0, 0.0, 22.0, 22.0), NULL);
 	shapeLayer.lineWidth = 0.0;
-//	shapeLayer.opacity = 0.0;
+	shapeLayer.opacity = 0.0;
 	CGColorRef redColor = CGColorCreateGenericRGB(1.0, 0.0, 0.0, 1.0);
 	shapeLayer.fillColor = redColor;
 	CGColorRelease(redColor);
@@ -98,32 +104,63 @@ static NSString * DLTouchTimeKey = @"timeInSession";
 	// draw the path from plist
 	double vdoDuration = CMTimeGetSeconds(_playerItem.duration);
 	UITouchPhase ttype;
-	NSTimeInterval startTime, endTime;
-	CAKeyframeAnimation * frameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
+	CAKeyframeAnimation * dotFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
+	CAKeyframeAnimation * fadeFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
 	NSUInteger c = [_touches count];
-	// initialize - time
+	// initialization
+	// key times array
 	NSMutableArray * theTimes = [NSMutableArray arrayWithCapacity:c];
-	// initialize - position
+	// positions array
 	NSMutableArray * thePositions = [NSMutableArray arrayWithCapacity:c];
+	// opacity values array
+	NSMutableArray * opacTimes = [NSMutableArray arrayWithCapacity:10];
+	NSMutableArray * opacValues = [NSMutableArray arrayWithCapacity:10];
+	NSNumber * zeroNum = (NSNumber *)kCFBooleanFalse;
+	NSNumber * oneNum = (NSNumber *)kCFBooleanTrue;
+	NSNumber * touchTime;
+	double curTimeItval;
 	for (NSDictionary * touchDict in _touches) {
 		// time
-		[theTimes addObject:[NSNumber numberWithDouble:[[touchDict objectForKey:DLTouchTimeKey] doubleValue] / vdoDuration]];
+		curTimeItval = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
+		touchTime = [NSNumber numberWithDouble:curTimeItval / vdoDuration];
+		[theTimes addObject:touchTime];
 		// position of layer at time
 		[thePositions addObject:[NSValue valueWithPoint:NSMakePoint([[touchDict valueForKeyPath:DLLocationXKeyPath] floatValue], [[touchDict valueForKeyPath:DLLocationYKeyPath] floatValue])]];
-//		ttype = [[touchDict objectForKey:DLTouchPhaseKey] integerValue];
-//		if ( ttype == UITouchPhaseBegan ) {
-//			startTime = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
-//		} else if ( ttype == UITouchPhaseCancelled || ttype == UITouchPhaseEnded ) {
-//			endTime = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
-//		}
+		// fade in/out of dot
+		ttype = [[touchDict objectForKey:DLTouchPhaseKey] integerValue];
+		if ( ttype == UITouchPhaseBegan ) {
+			// fade in effect
+			// effect start time
+			[opacTimes addObject:[NSNumber numberWithDouble:([[touchDict objectForKey:DLTouchTimeKey] doubleValue] - 0.15) / vdoDuration]];
+			// effect end time
+			[opacTimes addObject:touchTime];
+			[opacValues addObject:zeroNum];		// start value
+			[opacValues addObject:oneNum];		// end value
+		} else if ( ttype == UITouchPhaseCancelled || ttype == UITouchPhaseEnded ) {
+			// fade out effect
+			// effect start time
+			[opacTimes addObject:touchTime];
+			// effect end time
+			[opacTimes addObject:[NSNumber numberWithDouble:(curTimeItval + 0.15) / vdoDuration]];
+			[opacValues addObject:oneNum];		// start value
+			[opacValues addObject:zeroNum];		// end value
+		}
 	}
 	
-	frameAnimation.values = thePositions;
-	frameAnimation.keyTimes = theTimes;
-	frameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
-	frameAnimation.duration = vdoDuration;
-	frameAnimation.removedOnCompletion = NO;
-	[shapeLayer addAnimation:frameAnimation forKey:nil];
+	dotFrameAnimation.values = thePositions;
+	dotFrameAnimation.keyTimes = theTimes;
+	dotFrameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
+	dotFrameAnimation.duration = vdoDuration;
+	dotFrameAnimation.removedOnCompletion = NO;
+	
+	fadeFrameAnimation.values = opacValues;
+	fadeFrameAnimation.keyTimes = opacTimes;
+	fadeFrameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
+	fadeFrameAnimation.duration = vdoDuration;
+	fadeFrameAnimation.removedOnCompletion = NO;
+	
+	[shapeLayer addAnimation:fadeFrameAnimation forKey:@"fadeAnimation"];
+	[shapeLayer addAnimation:dotFrameAnimation forKey:@"positionAnimation"];
 }
 
 @end
