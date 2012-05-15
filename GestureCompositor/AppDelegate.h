@@ -8,13 +8,24 @@
 
 #import <Cocoa/Cocoa.h>
 
+typedef enum {
+    UITouchPhaseBegan,             // whenever a finger touches the surface.
+    UITouchPhaseMoved,             // whenever a finger moves on the surface.
+    UITouchPhaseStationary,        // whenever a finger is touching the surface but hasn't moved since the previous event.
+    UITouchPhaseEnded,             // whenever a finger leaves the surface.
+    UITouchPhaseCancelled,         // whenever a touch doesn't end but we need to stop tracking (e.g. putting device to face)
+} UITouchPhase;
+
 @interface AppDelegate : NSObject <NSApplicationDelegate>
 
 @property (strong) AVPlayer * player;
+@property (strong) AVPlayerItem * playerItem;
 @property (strong) AVAsset * sourceVideoAsset;
+@property (strong) NSArray * touches;
 @property (assign) IBOutlet NSWindow *window;
 @property (weak) IBOutlet NSView *playbackView;
 
 - (IBAction)playPlainVideo:(id)sender;
+- (IBAction)playWithGesture:(id)sender;
 
 @end

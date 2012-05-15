@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A95DA48115624C3100B00019 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A95DA48015624C3100B00019 /* CoreMedia.framework */; };
 		A9F1E834155C34A3001C0C37 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9F1E833155C34A3001C0C37 /* Foundation.framework */; };
 		A9F1E837155C34A3001C0C37 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A9F1E836155C34A3001C0C37 /* main.m */; };
 		A9F1E83B155C34A3001C0C37 /* gesturedrawer.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = A9F1E83A155C34A3001C0C37 /* gesturedrawer.1 */; };
@@ -35,6 +36,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A95DA48015624C3100B00019 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		A9EAEFE3155D03AB005B17ED /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		A9F1E82F155C34A3001C0C37 /* gesturedrawer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = gesturedrawer; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9F1E833155C34A3001C0C37 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -72,6 +74,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A95DA48115624C3100B00019 /* CoreMedia.framework in Frameworks */,
 				A9F1E869155C4F84001C0C37 /* QuartzCore.framework in Frameworks */,
 				A9F1E867155C4F79001C0C37 /* AVFoundation.framework in Frameworks */,
 				A9F1E84A155C4BBD001C0C37 /* Cocoa.framework in Frameworks */,
@@ -84,6 +87,7 @@
 		A9F1E824155C34A3001C0C37 = {
 			isa = PBXGroup;
 			children = (
+				A95DA48015624C3100B00019 /* CoreMedia.framework */,
 				A9EAEFE3155D03AB005B17ED /* README */,
 				A9F1E835155C34A3001C0C37 /* gesturedrawer */,
 				A9F1E84F155C4BBD001C0C37 /* GestureCompositor */,
