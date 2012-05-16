@@ -9,8 +9,8 @@
 #import "AppDelegate.h"
 #import <crt_externs.h>
 
-static NSString * DLLocationXKeyPath = @"location.x";
-static NSString * DLLocationYKeyPath = @"location.y";
+static NSString * DLLocationXKey = @"x";
+static NSString * DLLocationYKey = @"y";
 static NSString * DLTouchPhaseKey = @"phase";
 static NSString * DLTouchTimeKey = @"timeInSession";
 
@@ -125,7 +125,7 @@ static NSString * DLTouchTimeKey = @"timeInSession";
 		touchTime = [NSNumber numberWithDouble:curTimeItval / vdoDuration];
 		[theTimes addObject:touchTime];
 		// position of layer at time
-		[thePositions addObject:[NSValue valueWithPoint:NSMakePoint([[touchDict valueForKeyPath:DLLocationXKeyPath] floatValue], [[touchDict valueForKeyPath:DLLocationYKeyPath] floatValue])]];
+		[thePositions addObject:[NSValue valueWithPoint:NSMakePoint([[touchDict valueForKey:DLLocationXKey] floatValue], [[touchDict valueForKey:DLLocationYKey] floatValue])]];
 		// fade in/out of dot
 		ttype = [[touchDict objectForKey:DLTouchPhaseKey] integerValue];
 		if ( ttype == UITouchPhaseBegan ) {
