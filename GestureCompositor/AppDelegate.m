@@ -16,6 +16,12 @@ static NSString * DLTouchSequenceNumKey = @"sequenceNum";
 static NSString * DLTouchPhaseKey = @"phase";
 static NSString * DLTouchTimeKey = @"timeInSession";
 
+@interface AppDelegate (PrivateMethods)
+
+- (void)setupGestuerAnimations;
+
+@end
+
 @implementation AppDelegate
 
 @synthesize player = _player;
@@ -73,6 +79,7 @@ static NSString * DLTouchTimeKey = @"timeInSession";
 		NSError * err = nil;
 		self.touches = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
 //		self.touches = [NSPropertyListSerialization propertyListWithStream:inStream options:0 format:&listFmt error:&err];
+		[self setupGestuerAnimations];
 	}
 }
 
@@ -92,39 +99,105 @@ static NSString * DLTouchTimeKey = @"timeInSession";
 		shapeLayer = [unassignedLayerBuffer anyObject];
 		if ( shapeLayer ) {
 			[unassignedLayerBuffer removeObject:shapeLayer];
+		} else {
+			// create the layer
+			shapeLayer = [CAShapeLayer layer];
+			CGPathRef cirPath = CGPathCreateWithEllipseInRect(CGRectMake(0.0, 0.0, 22.0, 22.0), NULL);
+			shapeLayer.lineWidth = 0.0;
+			shapeLayer.opacity = 0.0;
+			CGColorRef redColor = CGColorCreateGenericRGB(1.0, 0.0, 0.0, 1.0);
+			shapeLayer.fillColor = redColor;
+			CGColorRelease(redColor);
+			
+			shapeLayer.path = cirPath;
+			CGPathRelease(cirPath);
+			
+			// create synchronized layer for video playback
+			AVSynchronizedLayer * syncLayer = [AVSynchronizedLayer synchronizedLayerWithPlayerItem:_playerItem];
+			//	syncLayer.bounds = CGRectMake(0.0, 0.0, vdoSize.width, vdoSize.height);
+			syncLayer.frame = CGRectMake(0.0, 0.0, 320.0, 480.0);
+			[syncLayer addSublayer:shapeLayer];
+			
+			[_playbackView.layer addSublayer:syncLayer];
 		}
-		// create the layer
-		shapeLayer = [CAShapeLayer layer];
-		CGPathRef cirPath = CGPathCreateWithEllipseInRect(CGRectMake(0.0, 0.0, 22.0, 22.0), NULL);
-		shapeLayer.lineWidth = 0.0;
-		shapeLayer.opacity = 0.0;
-		CGColorRef redColor = CGColorCreateGenericRGB(1.0, 0.0, 0.0, 1.0);
-		shapeLayer.fillColor = redColor;
-		CGColorRelease(redColor);
-		
-		shapeLayer.path = cirPath;
-		CGPathRelease(cirPath);
-		
-		// create synchronized layer for video playback
-		AVSynchronizedLayer * syncLayer = [AVSynchronizedLayer synchronizedLayerWithPlayerItem:_playerItem];
-		//	syncLayer.bounds = CGRectMake(0.0, 0.0, vdoSize.width, vdoSize.height);
-		syncLayer.frame = CGRectMake(0.0, 0.0, 320.0, 480.0);
-		[syncLayer addSublayer:shapeLayer];
-		
-		[_playbackView.layer addSublayer:syncLayer];
+		[touchIDLayerMapping setObject:shapeLayer forKey:aTouchID];
+		if ( [touchIDLayerMapping count] > 1 ) {
+			NSLog(@"more than one touches");
+		}
 	} else {
 		// check if the touch is the last touch
 		if ( ttype == UITouchPhaseEnded || ttype == UITouchPhaseCancelled ) {
 			// reclaim the layer back to buffer
 			[unassignedLayerBuffer addObject:shapeLayer];
+			[touchIDLayerMapping removeObjectForKey:aTouchID];
 		}
 	}
 	return shapeLayer;
 }
 
 - (void)setupGestuerAnimations {
-//	CAShapeLayer * shapeLayer = [self layerForTouch:];
-
+	// draw the path from plist
+	double vdoDuration = CMTimeGetSeconds(_playerItem.duration);
+	UITouchPhase ttype;
+	CAKeyframeAnimation * dotFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
+	CAKeyframeAnimation * fadeFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
+	NSUInteger c = [_touches count];
+	// initialization
+	// key times array
+	NSMutableArray * theTimes = [NSMutableArray arrayWithCapacity:c];
+	// positions array
+	NSMutableArray * thePositions = [NSMutableArray arrayWithCapacity:c];
+	// opacity values array
+	NSMutableArray * opacTimes = [NSMutableArray arrayWithCapacity:10];
+	NSMutableArray * opacValues = [NSMutableArray arrayWithCapacity:10];
+	NSNumber * zeroNum = (NSNumber *)kCFBooleanFalse;
+	NSNumber * oneNum = (NSNumber *)kCFBooleanTrue;
+	NSNumber * touchTime;
+	double curTimeItval;
+	CAShapeLayer * shapeLayer;
+	for (NSDictionary * touchDict in _touches) {
+		shapeLayer = [self layerForTouch:touchDict];
+		// setup the layer's position at time
+		// time
+		curTimeItval = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
+		touchTime = [NSNumber numberWithDouble:curTimeItval / vdoDuration];
+		[theTimes addObject:touchTime];
+		// position of layer at time
+		[thePositions addObject:[NSValue valueWithPoint:NSMakePoint([[touchDict valueForKey:DLLocationXKey] floatValue], [[touchDict valueForKey:DLLocationYKey] floatValue])]];
+		// fade in/out of dot
+		ttype = [[touchDict objectForKey:DLTouchPhaseKey] integerValue];
+		if ( ttype == UITouchPhaseBegan ) {
+			// fade in effect
+			// effect start time
+			[opacTimes addObject:[NSNumber numberWithDouble:([[touchDict objectForKey:DLTouchTimeKey] doubleValue] - 0.15) / vdoDuration]];
+			// effect end time
+			[opacTimes addObject:touchTime];
+			[opacValues addObject:zeroNum];		// start value
+			[opacValues addObject:oneNum];		// end value
+		} else if ( ttype == UITouchPhaseCancelled || ttype == UITouchPhaseEnded ) {
+			// fade out effect
+			// effect start time
+			[opacTimes addObject:touchTime];
+			// effect end time
+			[opacTimes addObject:[NSNumber numberWithDouble:(curTimeItval + 0.15) / vdoDuration]];
+			[opacValues addObject:oneNum];		// start value
+			[opacValues addObject:zeroNum];		// end value
+		}
+	}
+	dotFrameAnimation.values = thePositions;
+	dotFrameAnimation.keyTimes = theTimes;
+	dotFrameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
+	dotFrameAnimation.duration = vdoDuration;
+	dotFrameAnimation.removedOnCompletion = NO;
+	
+	fadeFrameAnimation.values = opacValues;
+	fadeFrameAnimation.keyTimes = opacTimes;
+	fadeFrameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
+	fadeFrameAnimation.duration = vdoDuration;
+	fadeFrameAnimation.removedOnCompletion = NO;
+	
+	[shapeLayer addAnimation:fadeFrameAnimation forKey:@"fadeAnimation"];
+	[shapeLayer addAnimation:dotFrameAnimation forKey:@"positionAnimation"];
 }
 
 - (IBAction)playWithGesture:(id)sender {
