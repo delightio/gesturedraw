@@ -11,6 +11,8 @@
 
 static NSString * DLLocationXKey = @"x";
 static NSString * DLLocationYKey = @"y";
+static NSString * DLTouchIDKey = @"touchID";
+static NSString * DLTouchSequenceNumKey = @"sequenceNum";
 static NSString * DLTouchPhaseKey = @"phase";
 static NSString * DLTouchTimeKey = @"timeInSession";
 
@@ -25,6 +27,8 @@ static NSString * DLTouchTimeKey = @"timeInSession";
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
+	touchIDLayerMapping = [[NSMutableDictionary alloc] initWithCapacity:4];
+	unassignedLayerBuffer = [[NSMutableSet alloc] initWithCapacity:4];
 	// get file from command
 	int argc = *_NSGetArgc();
 	char ** argv = *_NSGetArgv();
@@ -78,6 +82,49 @@ static NSString * DLTouchTimeKey = @"timeInSession";
 
 - (IBAction)playPlainVideo:(id)sender {
 	[_player play];
+}
+
+- (CAShapeLayer *)layerForTouch:(NSDictionary *)aTouchDict {
+	NSNumber * aTouchID = [aTouchDict objectForKey:DLTouchIDKey];
+	UITouchPhase ttype = [[aTouchDict objectForKey:DLTouchPhaseKey] integerValue];
+	CAShapeLayer * shapeLayer = [touchIDLayerMapping objectForKey:aTouchID];
+	if ( shapeLayer == nil ) {
+		shapeLayer = [unassignedLayerBuffer anyObject];
+		if ( shapeLayer ) {
+			[unassignedLayerBuffer removeObject:shapeLayer];
+		}
+		// create the layer
+		shapeLayer = [CAShapeLayer layer];
+		CGPathRef cirPath = CGPathCreateWithEllipseInRect(CGRectMake(0.0, 0.0, 22.0, 22.0), NULL);
+		shapeLayer.lineWidth = 0.0;
+		shapeLayer.opacity = 0.0;
+		CGColorRef redColor = CGColorCreateGenericRGB(1.0, 0.0, 0.0, 1.0);
+		shapeLayer.fillColor = redColor;
+		CGColorRelease(redColor);
+		
+		shapeLayer.path = cirPath;
+		CGPathRelease(cirPath);
+		
+		// create synchronized layer for video playback
+		AVSynchronizedLayer * syncLayer = [AVSynchronizedLayer synchronizedLayerWithPlayerItem:_playerItem];
+		//	syncLayer.bounds = CGRectMake(0.0, 0.0, vdoSize.width, vdoSize.height);
+		syncLayer.frame = CGRectMake(0.0, 0.0, 320.0, 480.0);
+		[syncLayer addSublayer:shapeLayer];
+		
+		[_playbackView.layer addSublayer:syncLayer];
+	} else {
+		// check if the touch is the last touch
+		if ( ttype == UITouchPhaseEnded || ttype == UITouchPhaseCancelled ) {
+			// reclaim the layer back to buffer
+			[unassignedLayerBuffer addObject:shapeLayer];
+		}
+	}
+	return shapeLayer;
+}
+
+- (void)setupGestuerAnimations {
+//	CAShapeLayer * shapeLayer = [self layerForTouch:];
+
 }
 
 - (IBAction)playWithGesture:(id)sender {

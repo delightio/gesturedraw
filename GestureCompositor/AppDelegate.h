@@ -16,7 +16,10 @@ typedef enum {
     UITouchPhaseCancelled,         // whenever a touch doesn't end but we need to stop tracking (e.g. putting device to face)
 } UITouchPhase;
 
-@interface AppDelegate : NSObject <NSApplicationDelegate>
+@interface AppDelegate : NSObject <NSApplicationDelegate> {
+	__strong NSMutableDictionary * touchIDLayerMapping;
+	__strong NSMutableSet * unassignedLayerBuffer;
+}
 
 @property (strong) AVPlayer * player;
 @property (strong) AVPlayerItem * playerItem;
