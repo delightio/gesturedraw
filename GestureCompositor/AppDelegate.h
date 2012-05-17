@@ -30,6 +30,5 @@ typedef enum {
 @property (nonatomic, weak) IBOutlet NSView *playbackView;
 
 - (IBAction)playPlainVideo:(id)sender;
-- (IBAction)playWithGesture:(id)sender;
 
 @end
