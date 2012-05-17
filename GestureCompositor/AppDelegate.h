@@ -21,12 +21,12 @@ typedef enum {
 	__strong NSMutableSet * unassignedLayerBuffer;
 }
 
-@property (strong) AVPlayer * player;
-@property (strong) AVPlayerItem * playerItem;
-@property (strong) AVAsset * sourceVideoAsset;
-@property (strong) NSArray * touches;
-@property (assign) IBOutlet NSWindow *window;
-@property (weak) IBOutlet NSView *playbackView;
+@property (nonatomic, strong) AVPlayer * player;
+@property (nonatomic, strong) AVPlayerItem * playerItem;
+@property (nonatomic, strong) AVAsset * sourceVideoAsset;
+@property (nonatomic, strong) NSArray * touches;
+@property (nonatomic, assign) IBOutlet NSWindow *window;
+@property (nonatomic, weak) IBOutlet NSView *playbackView;
 
 - (IBAction)playPlainVideo:(id)sender;
 - (IBAction)playWithGesture:(id)sender;

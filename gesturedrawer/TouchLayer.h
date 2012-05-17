@@ -10,9 +10,9 @@
 
 @interface TouchLayer : CAShapeLayer
 
-@property (nonatomic, readonly) NSMutableArray * pathKeyTimes;
-@property (nonatomic, readonly) NSMutableArray * opacityKeyTimes;
-@property (nonatomic, readonly) NSMutableArray * pathValues;
-@property (nonatomic, readonly) NSMutableArray * opacityValues;
+@property (nonatomic, strong) NSMutableArray * pathKeyTimes;
+@property (nonatomic, strong) NSMutableArray * opacityKeyTimes;
+@property (nonatomic, strong) NSMutableArray * pathValues;
+@property (nonatomic, strong) NSMutableArray * opacityValues;
 
 @end
