@@ -20,6 +20,7 @@ typedef enum {
 	__strong NSMutableDictionary * touchIDLayerMapping;
 	__strong NSMutableSet * unassignedLayerBuffer;
 	__strong AVSynchronizedLayer * syncLayer;
+	__strong AVAssetExportSession * session;
 }
 
 @property (nonatomic, strong) AVPlayer * player;
@@ -30,5 +31,6 @@ typedef enum {
 @property (nonatomic, weak) IBOutlet NSView *playbackView;
 
 - (IBAction)playPlainVideo:(id)sender;
+- (IBAction)exportVideo:(id)sender;
 
 @end

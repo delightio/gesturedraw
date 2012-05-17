@@ -22,7 +22,7 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 
 @interface AppDelegate (PrivateMethods)
 
-- (void)setupGestuerAnimations;
+- (void)setupGestureAnimationsForLayer:(CALayer *)parentLayer;
 
 @end
 
@@ -90,7 +90,7 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 		NSError * err = nil;
 		self.touches = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
 //		self.touches = [NSPropertyListSerialization propertyListWithStream:inStream options:0 format:&listFmt error:&err];
-		[self setupGestuerAnimations];
+//		[self setupGestureAnimationsForLayer:syncLayer];
 	}
 }
 
@@ -98,11 +98,63 @@ static NSString * DLTouchTapCountKey = @"tapCount";
     [_player seekToTime:kCMTimeZero];
 }
 
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+	if ( [keyPath isEqualToString:@"status"] ) {
+		NSLog(@"%@", session.error);
+	} else {
+		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+	}
+}
 - (IBAction)playPlainVideo:(id)sender {
 	[_player play];
 }
 
-- (TouchLayer *)layerForTouch:(NSDictionary *)aTouchDict {
+- (IBAction)exportVideo:(id)sender {
+	// create composition from source
+	AVMutableComposition * srcComposition = [AVMutableComposition composition];
+	srcComposition.naturalSize = CGSizeMake(320.0, 480.0);
+	AVMutableCompositionTrack * theTrack = [srcComposition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:10];
+	[theTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, _sourceVideoAsset.duration) ofTrack:[[_sourceVideoAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0] atTime:kCMTimeZero error:nil];
+	
+	// build "pass through video track"
+	AVMutableVideoComposition * videoComposition = [AVMutableVideoComposition videoComposition];
+	AVMutableVideoCompositionInstruction *passThroughInstruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
+	passThroughInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, [srcComposition duration]);
+	
+	AVAssetTrack *videoTrack = [[srcComposition tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
+	AVMutableVideoCompositionLayerInstruction *passThroughLayer = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:videoTrack];
+	
+	passThroughInstruction.layerInstructions = [NSArray arrayWithObject:passThroughLayer];
+	videoComposition.instructions = [NSArray arrayWithObject:passThroughInstruction];
+	
+	// prepare animation
+	CALayer * videoLayer = [CALayer layer];
+	CALayer * parentLayer = [CALayer layer];
+	videoLayer.frame = CGRectMake(0.0, 0.0, 320.0, 480.0);
+	parentLayer.frame = CGRectMake(0.0, 0.0, 320.0, 480.0);
+//	[parentLayer setGeometryFlipped:YES];
+	[parentLayer addSublayer:videoLayer];
+	// create animation
+	[self setupGestureAnimationsForLayer:parentLayer];
+	videoComposition.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayer:videoLayer inLayer:parentLayer];
+//	videoComposition.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithAdditionalLayer:parentLayer asTrackID:23];
+	videoComposition.frameDuration = CMTimeMake(1, 30);
+	videoComposition.renderSize = CGSizeMake(320.0, 480.0);
+	
+	NSString * path = [NSHomeDirectory() stringByAppendingPathComponent:@"Desktop/test.mp4"];
+	session = [[AVAssetExportSession alloc] initWithAsset:srcComposition presetName:AVAssetExportPresetPassthrough];
+	session.videoComposition = videoComposition;
+	session.outputURL = [NSURL fileURLWithPath:path];
+	session.outputFileType = AVFileTypeMPEG4;
+	
+	[session addObserver:self forKeyPath:@"status" options:0 context:NULL];
+	
+	[session exportAsynchronouslyWithCompletionHandler:^{
+		NSLog(@"export completed");
+	}];
+}
+
+- (TouchLayer *)layerForTouch:(NSDictionary *)aTouchDict parentLayer:(CALayer *)pLayer {
 	NSNumber * aTouchID = [aTouchDict objectForKey:DLTouchIDKey];
 	UITouchPhase ttype = [[aTouchDict objectForKey:DLTouchPhaseKey] integerValue];
 	TouchLayer * shapeLayer = [touchIDLayerMapping objectForKey:aTouchID];
@@ -113,21 +165,9 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 		} else {
 			// create the layer
 			shapeLayer = [TouchLayer layer];
-			CGPathRef cirPath = CGPathCreateWithEllipseInRect(CGRectMake(0.0, 0.0, 22.0, 22.0), NULL);
-			shapeLayer.lineWidth = 0.0;
-			shapeLayer.opacity = 0.0;
-			CGColorRef redColor = CGColorCreateGenericRGB(1.0, 0.0, 0.0, 1.0);
-			shapeLayer.fillColor = redColor;
-			CGColorRelease(redColor);
-			
-			shapeLayer.path = cirPath;
-			CGPathRelease(cirPath);
-			[syncLayer addSublayer:shapeLayer];
+			[pLayer addSublayer:shapeLayer];
 		}
 		[touchIDLayerMapping setObject:shapeLayer forKey:aTouchID];
-		if ( [touchIDLayerMapping count] > 1 ) {
-			NSLog(@"more than one touches");
-		}
 	} else {
 		// check if the touch is the last touch
 		if ( ttype == UITouchPhaseEnded || ttype == UITouchPhaseCancelled ) {
@@ -139,7 +179,7 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	return shapeLayer;
 }
 
-- (void)setupGestuerAnimations {
+- (void)setupGestureAnimationsForLayer:(CALayer *)parentLayer {
 	// draw the path from plist
 	double vdoDuration = CMTimeGetSeconds(_playerItem.duration);
 	UITouchPhase ttype;
@@ -150,8 +190,9 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	NSNumber * fadeTimeNum = nil;
 	double curTimeItval;
 	TouchLayer * shapeLayer = nil;
+	if ( parentLayer == nil ) parentLayer = syncLayer;
 	for (NSDictionary * touchDict in _touches) {
-		shapeLayer = [self layerForTouch:touchDict];
+		shapeLayer = [self layerForTouch:touchDict parentLayer:parentLayer];
 		// setup the layer's position at time
 		// time
 		curTimeItval = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
