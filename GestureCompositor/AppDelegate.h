@@ -19,6 +19,7 @@ typedef enum {
 @interface AppDelegate : NSObject <NSApplicationDelegate> {
 	__strong NSMutableDictionary * touchIDLayerMapping;
 	__strong NSMutableSet * unassignedLayerBuffer;
+	__strong AVSynchronizedLayer * syncLayer;
 }
 
 @property (nonatomic, strong) AVPlayer * player;

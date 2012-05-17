@@ -13,9 +13,12 @@
 static NSString * DLLocationXKey = @"x";
 static NSString * DLLocationYKey = @"y";
 static NSString * DLTouchIDKey = @"touchID";
-static NSString * DLTouchSequenceNumKey = @"sequenceNum";
+static NSString * DLTouchSequenceNumKey = @"seq";
 static NSString * DLTouchPhaseKey = @"phase";
-static NSString * DLTouchTimeKey = @"timeInSession";
+static NSString * DLTouchTimeKey = @"time";
+static NSString * DLTouchTapCountKey = @"tapCount";
+
+#define DL_MINIMUM_DURATION 0.15
 
 @interface AppDelegate (PrivateMethods)
 
@@ -71,6 +74,13 @@ static NSString * DLTouchTimeKey = @"timeInSession";
 	AVPlayerLayer * theLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
 	theLayer.frame = _playbackView.bounds;
 	[_playbackView setLayer:theLayer];
+	// create synchronized layer for video playback
+	syncLayer = [AVSynchronizedLayer synchronizedLayerWithPlayerItem:_playerItem];
+	//	syncLayer.bounds = CGRectMake(0.0, 0.0, vdoSize.width, vdoSize.height);
+	syncLayer.frame = CGRectMake(0.0, 0.0, 320.0, 480.0);
+	[syncLayer setGeometryFlipped:YES];
+	
+	[_playbackView.layer addSublayer:syncLayer];
 	
 	// open the plist file
 	if ( plistFilePath ) {
@@ -112,14 +122,7 @@ static NSString * DLTouchTimeKey = @"timeInSession";
 			
 			shapeLayer.path = cirPath;
 			CGPathRelease(cirPath);
-			
-			// create synchronized layer for video playback
-			AVSynchronizedLayer * syncLayer = [AVSynchronizedLayer synchronizedLayerWithPlayerItem:_playerItem];
-			//	syncLayer.bounds = CGRectMake(0.0, 0.0, vdoSize.width, vdoSize.height);
-			syncLayer.frame = CGRectMake(0.0, 0.0, 320.0, 480.0);
 			[syncLayer addSublayer:shapeLayer];
-			
-			[_playbackView.layer addSublayer:syncLayer];
 		}
 		[touchIDLayerMapping setObject:shapeLayer forKey:aTouchID];
 		if ( [touchIDLayerMapping count] > 1 ) {
@@ -141,9 +144,10 @@ static NSString * DLTouchTimeKey = @"timeInSession";
 	double vdoDuration = CMTimeGetSeconds(_playerItem.duration);
 	UITouchPhase ttype;
 	// opacity values array
-	NSNumber * zeroNum = (__bridge NSNumber *)kCFBooleanFalse;
-	NSNumber * oneNum = (__bridge NSNumber *)kCFBooleanTrue;
-	NSNumber * touchTime;
+	NSNumber * zeroNum = (NSNumber *)kCFBooleanFalse;
+	NSNumber * oneNum = (NSNumber *)kCFBooleanTrue;
+	NSNumber * touchTime = nil;
+	NSNumber * fadeTimeNum = nil;
 	double curTimeItval;
 	TouchLayer * shapeLayer = nil;
 	for (NSDictionary * touchDict in _touches) {
@@ -152,28 +156,46 @@ static NSString * DLTouchTimeKey = @"timeInSession";
 		// time
 		curTimeItval = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
 		touchTime = [NSNumber numberWithDouble:curTimeItval / vdoDuration];
-		[shapeLayer.pathKeyTimes addObject:touchTime];
-		// position of layer at time
-		[shapeLayer.pathValues addObject:[NSValue valueWithPoint:NSMakePoint([[touchDict valueForKey:DLLocationXKey] floatValue], [[touchDict valueForKey:DLLocationYKey] floatValue])]];
+//		[shapeLayer.pathKeyTimes addObject:touchTime];
+//		// position of layer at time
+//		[shapeLayer.pathValues addObject:[NSValue valueWithPoint:NSMakePoint([[touchDict valueForKey:DLLocationXKey] floatValue], [[touchDict valueForKey:DLLocationYKey] floatValue])]];
 		// fade in/out of dot
 		ttype = [[touchDict objectForKey:DLTouchPhaseKey] integerValue];
 		if ( ttype == UITouchPhaseBegan ) {
+			shapeLayer.startTime = curTimeItval;
 			// fade in effect
 			// effect start time
-			[shapeLayer.opacityKeyTimes addObject:[NSNumber numberWithDouble:([[touchDict objectForKey:DLTouchTimeKey] doubleValue] - 0.15) / vdoDuration]];
+			fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval - 0.15) / vdoDuration];
+			[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
 			// effect end time
 			[shapeLayer.opacityKeyTimes addObject:touchTime];
 			[shapeLayer.opacityValues addObject:zeroNum];		// start value
 			[shapeLayer.opacityValues addObject:oneNum];		// end value
+			// make sure the dot is "in" the location when animation starts
+			[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
+			[shapeLayer.pathValues addObject:[NSValue valueWithPoint:NSMakePoint([[touchDict valueForKey:DLLocationXKey] floatValue], [[touchDict valueForKey:DLLocationYKey] floatValue])]];
 		} else if ( ttype == UITouchPhaseCancelled || ttype == UITouchPhaseEnded ) {
+			if ( curTimeItval - shapeLayer.startTime < DL_MINIMUM_DURATION ) {
+				// we need to show the dot for longer time so that it's visually visible
+				curTimeItval = shapeLayer.startTime + DL_MINIMUM_DURATION;
+				touchTime = [NSNumber numberWithDouble:curTimeItval / vdoDuration];
+			}
 			// fade out effect
 			// effect start time
 			[shapeLayer.opacityKeyTimes addObject:touchTime];
 			// effect end time
-			[shapeLayer.opacityKeyTimes addObject:[NSNumber numberWithDouble:(curTimeItval + 0.15) / vdoDuration]];
+			fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval + 0.15) / vdoDuration];
+			[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
 			[shapeLayer.opacityValues addObject:oneNum];		// start value
 			[shapeLayer.opacityValues addObject:zeroNum];		// end value
+			// make sure the dot is not moving till animation is done
+			[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
+			[shapeLayer.pathValues addObject:[NSValue valueWithPoint:NSMakePoint([[touchDict valueForKey:DLLocationXKey] floatValue], [[touchDict valueForKey:DLLocationYKey] floatValue])]];
 		}
+		// set paths
+		[shapeLayer.pathKeyTimes addObject:touchTime];
+		// position of layer at time
+		[shapeLayer.pathValues addObject:[NSValue valueWithPoint:NSMakePoint([[touchDict valueForKey:DLLocationXKey] floatValue], [[touchDict valueForKey:DLLocationYKey] floatValue])]];
 	}
 	for (TouchLayer * theLayer in unassignedLayerBuffer) {
 		CAKeyframeAnimation * dotFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];

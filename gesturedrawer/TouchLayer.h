@@ -14,5 +14,6 @@
 @property (nonatomic, strong) NSMutableArray * opacityKeyTimes;
 @property (nonatomic, strong) NSMutableArray * pathValues;
 @property (nonatomic, strong) NSMutableArray * opacityValues;
+@property (nonatomic, assign) NSTimeInterval startTime;
 
 @end

@@ -13,6 +13,7 @@
 @synthesize opacityKeyTimes = _opacityKeyTimes;
 @synthesize pathValues = _pathValues;
 @synthesize opacityValues = _opacityValues;
+@synthesize startTime = _startTime;
 
 - (id)init {
 	self = [super init];
