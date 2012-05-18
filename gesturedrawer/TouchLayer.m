@@ -21,9 +21,15 @@
 	CGPathRef cirPath = CGPathCreateWithEllipseInRect(CGRectMake(0.0, 0.0, 22.0, 22.0), NULL);
 	[self setLineWidth:0.0];
 	[self setOpacity:0.0];
+#if TARGET_OS_IPHONE
+	CGColorRef redColor = [UIColor redColor].CGColor;
+#else
 	CGColorRef redColor = CGColorCreateGenericRGB(1.0, 0.0, 0.0, 1.0);
+#endif
 	[self setFillColor:redColor];
+#if !TARGET_OS_IPHONE
 	CGColorRelease(redColor);
+#endif
 	
 	[self setPath:cirPath];
 	CGPathRelease(cirPath);

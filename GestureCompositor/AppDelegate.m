@@ -150,11 +150,11 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	videoComposition.frameDuration = CMTimeMake(1, 30);
 	videoComposition.renderSize = CGSizeMake(320.0, 480.0);
 	
-	NSString * path = [NSHomeDirectory() stringByAppendingPathComponent:@"Desktop/test.mp4"];
-	session = [[AVAssetExportSession alloc] initWithAsset:srcComposition presetName:AVAssetExportPresetPassthrough];
+	NSString * path = [NSHomeDirectory() stringByAppendingPathComponent:@"Desktop/test.mov"];
+	session = [[AVAssetExportSession alloc] initWithAsset:srcComposition presetName:AVAssetExportPreset640x480];
 	session.videoComposition = videoComposition;
 	session.outputURL = [NSURL fileURLWithPath:path];
-	session.outputFileType = AVFileTypeMPEG4;
+	session.outputFileType = AVFileTypeQuickTimeMovie;
 	
 	[session addObserver:self forKeyPath:@"status" options:0 context:NULL];
 	

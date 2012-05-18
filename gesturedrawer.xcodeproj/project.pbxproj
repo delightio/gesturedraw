@@ -8,9 +8,24 @@
 
 /* Begin PBXBuildFile section */
 		A91657021565B6A700B5EB80 /* dot.png in Resources */ = {isa = PBXBuildFile; fileRef = A91657011565B6A700B5EB80 /* dot.png */; };
+		A916A9DE1566C9F500362B04 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A916A9DD1566C9F500362B04 /* UIKit.framework */; };
+		A916A9DF1566C9F500362B04 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9F1E833155C34A3001C0C37 /* Foundation.framework */; };
+		A916A9E11566C9F500362B04 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A916A9E01566C9F500362B04 /* CoreGraphics.framework */; };
+		A916A9E71566C9F500362B04 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A916A9E51566C9F500362B04 /* InfoPlist.strings */; };
+		A916A9E91566C9F500362B04 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A916A9E81566C9F500362B04 /* main.m */; };
+		A916A9ED1566C9F500362B04 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A916A9EC1566C9F500362B04 /* AppDelegate.m */; };
+		A916A9F01566C9F500362B04 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A916A9EF1566C9F500362B04 /* ViewController.m */; };
+		A916A9F31566C9F500362B04 /* ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A916A9F11566C9F500362B04 /* ViewController.xib */; };
+		A916A9F91566CA0300362B04 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A916A9F81566CA0300362B04 /* AVFoundation.framework */; };
+		A916A9FB1566CA0A00362B04 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A916A9FA1566CA0A00362B04 /* CoreMedia.framework */; };
 		A95DA48115624C3100B00019 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A95DA48015624C3100B00019 /* CoreMedia.framework */; };
 		A99DED3A156509020022DD0F /* TouchLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A99DED39156509020022DD0F /* TouchLayer.m */; };
 		A99DED3B156509020022DD0F /* TouchLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A99DED39156509020022DD0F /* TouchLayer.m */; };
+		A9C800031566CA440002B91F /* TouchLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A99DED39156509020022DD0F /* TouchLayer.m */; };
+		A9C800061566CB010002B91F /* 158.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = A9C800041566CB010002B91F /* 158.mp4 */; };
+		A9C800071566CB010002B91F /* touches-158.plist in Resources */ = {isa = PBXBuildFile; fileRef = A9C800051566CB010002B91F /* touches-158.plist */; };
+		A9C800091566CBA00002B91F /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9C800081566CBA00002B91F /* QuartzCore.framework */; };
+		A9C8000F1566D1470002B91F /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9C8000E1566D1470002B91F /* AssetsLibrary.framework */; };
 		A9F1E834155C34A3001C0C37 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9F1E833155C34A3001C0C37 /* Foundation.framework */; };
 		A9F1E837155C34A3001C0C37 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A9F1E836155C34A3001C0C37 /* main.m */; };
 		A9F1E83B155C34A3001C0C37 /* gesturedrawer.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = A9F1E83A155C34A3001C0C37 /* gesturedrawer.1 */; };
@@ -40,9 +55,27 @@
 
 /* Begin PBXFileReference section */
 		A91657011565B6A700B5EB80 /* dot.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dot.png; sourceTree = "<group>"; };
+		A916A9DB1566C9F500362B04 /* GestureCompositorMobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GestureCompositorMobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A916A9DD1566C9F500362B04 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
+		A916A9E01566C9F500362B04 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
+		A916A9E41566C9F500362B04 /* GestureCompositorMobile-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GestureCompositorMobile-Info.plist"; sourceTree = "<group>"; };
+		A916A9E61566C9F500362B04 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A916A9E81566C9F500362B04 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		A916A9EA1566C9F500362B04 /* GestureCompositorMobile-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "GestureCompositorMobile-Prefix.pch"; sourceTree = "<group>"; };
+		A916A9EB1566C9F500362B04 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		A916A9EC1566C9F500362B04 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		A916A9EE1566C9F500362B04 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		A916A9EF1566C9F500362B04 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		A916A9F21566C9F500362B04 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/ViewController.xib; sourceTree = "<group>"; };
+		A916A9F81566CA0300362B04 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.1.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
+		A916A9FA1566CA0A00362B04 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.1.sdk/System/Library/Frameworks/CoreMedia.framework; sourceTree = DEVELOPER_DIR; };
 		A95DA48015624C3100B00019 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		A99DED38156509020022DD0F /* TouchLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TouchLayer.h; sourceTree = "<group>"; };
 		A99DED39156509020022DD0F /* TouchLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TouchLayer.m; sourceTree = "<group>"; };
+		A9C800041566CB010002B91F /* 158.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = 158.mp4; sourceTree = "<group>"; };
+		A9C800051566CB010002B91F /* touches-158.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "touches-158.plist"; sourceTree = "<group>"; };
+		A9C800081566CBA00002B91F /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.1.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
+		A9C8000E1566D1470002B91F /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.1.sdk/System/Library/Frameworks/AssetsLibrary.framework; sourceTree = DEVELOPER_DIR; };
 		A9EAEFE3155D03AB005B17ED /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		A9F1E82F155C34A3001C0C37 /* gesturedrawer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = gesturedrawer; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9F1E833155C34A3001C0C37 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -67,6 +100,20 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		A916A9D81566C9F500362B04 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A9C8000F1566D1470002B91F /* AssetsLibrary.framework in Frameworks */,
+				A9C800091566CBA00002B91F /* QuartzCore.framework in Frameworks */,
+				A916A9FB1566CA0A00362B04 /* CoreMedia.framework in Frameworks */,
+				A916A9F91566CA0300362B04 /* AVFoundation.framework in Frameworks */,
+				A916A9DE1566C9F500362B04 /* UIKit.framework in Frameworks */,
+				A916A9DF1566C9F500362B04 /* Foundation.framework in Frameworks */,
+				A916A9E11566C9F500362B04 /* CoreGraphics.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A9F1E82C155C34A3001C0C37 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -90,12 +137,40 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A916A9E21566C9F500362B04 /* GestureCompositorMobile */ = {
+			isa = PBXGroup;
+			children = (
+				A916A9EB1566C9F500362B04 /* AppDelegate.h */,
+				A916A9EC1566C9F500362B04 /* AppDelegate.m */,
+				A916A9EE1566C9F500362B04 /* ViewController.h */,
+				A916A9EF1566C9F500362B04 /* ViewController.m */,
+				A916A9F11566C9F500362B04 /* ViewController.xib */,
+				A916A9E31566C9F500362B04 /* Supporting Files */,
+			);
+			path = GestureCompositorMobile;
+			sourceTree = "<group>";
+		};
+		A916A9E31566C9F500362B04 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				A9C800041566CB010002B91F /* 158.mp4 */,
+				A9C800051566CB010002B91F /* touches-158.plist */,
+				A916A9E41566C9F500362B04 /* GestureCompositorMobile-Info.plist */,
+				A916A9E51566C9F500362B04 /* InfoPlist.strings */,
+				A916A9E81566C9F500362B04 /* main.m */,
+				A916A9EA1566C9F500362B04 /* GestureCompositorMobile-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
 		A9F1E824155C34A3001C0C37 = {
 			isa = PBXGroup;
 			children = (
+				A9C8000E1566D1470002B91F /* AssetsLibrary.framework */,
 				A9EAEFE3155D03AB005B17ED /* README */,
 				A9F1E835155C34A3001C0C37 /* gesturedrawer */,
 				A9F1E84F155C4BBD001C0C37 /* GestureCompositor */,
+				A916A9E21566C9F500362B04 /* GestureCompositorMobile */,
 				A9F1E832155C34A3001C0C37 /* Frameworks */,
 				A9F1E830155C34A3001C0C37 /* Products */,
 			);
@@ -106,6 +181,7 @@
 			children = (
 				A9F1E82F155C34A3001C0C37 /* gesturedrawer */,
 				A9F1E847155C4BBD001C0C37 /* GestureCompositor.app */,
+				A916A9DB1566C9F500362B04 /* GestureCompositorMobile.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -113,11 +189,16 @@
 		A9F1E832155C34A3001C0C37 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				A9C800081566CBA00002B91F /* QuartzCore.framework */,
+				A916A9FA1566CA0A00362B04 /* CoreMedia.framework */,
+				A916A9F81566CA0300362B04 /* AVFoundation.framework */,
 				A95DA48015624C3100B00019 /* CoreMedia.framework */,
 				A9F1E868155C4F84001C0C37 /* QuartzCore.framework */,
 				A9F1E841155C34B0001C0C37 /* AVFoundation.framework */,
 				A9F1E833155C34A3001C0C37 /* Foundation.framework */,
 				A9F1E849155C4BBD001C0C37 /* Cocoa.framework */,
+				A916A9DD1566C9F500362B04 /* UIKit.framework */,
+				A916A9E01566C9F500362B04 /* CoreGraphics.framework */,
 				A9F1E84B155C4BBD001C0C37 /* Other Frameworks */,
 			);
 			name = Frameworks;
@@ -180,6 +261,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		A916A9DA1566C9F500362B04 /* GestureCompositorMobile */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A916A9F61566C9F500362B04 /* Build configuration list for PBXNativeTarget "GestureCompositorMobile" */;
+			buildPhases = (
+				A916A9D71566C9F500362B04 /* Sources */,
+				A916A9D81566C9F500362B04 /* Frameworks */,
+				A916A9D91566C9F500362B04 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GestureCompositorMobile;
+			productName = GestureCompositorMobile;
+			productReference = A916A9DB1566C9F500362B04 /* GestureCompositorMobile.app */;
+			productType = "com.apple.product-type.application";
+		};
 		A9F1E82E155C34A3001C0C37 /* gesturedrawer */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A9F1E83E155C34A3001C0C37 /* Build configuration list for PBXNativeTarget "gesturedrawer" */;
@@ -237,11 +335,23 @@
 			targets = (
 				A9F1E82E155C34A3001C0C37 /* gesturedrawer */,
 				A9F1E846155C4BBD001C0C37 /* GestureCompositor */,
+				A916A9DA1566C9F500362B04 /* GestureCompositorMobile */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		A916A9D91566C9F500362B04 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A916A9E71566C9F500362B04 /* InfoPlist.strings in Resources */,
+				A916A9F31566C9F500362B04 /* ViewController.xib in Resources */,
+				A9C800061566CB010002B91F /* 158.mp4 in Resources */,
+				A9C800071566CB010002B91F /* touches-158.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A9F1E845155C4BBD001C0C37 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -256,6 +366,17 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		A916A9D71566C9F500362B04 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A916A9E91566C9F500362B04 /* main.m in Sources */,
+				A916A9ED1566C9F500362B04 /* AppDelegate.m in Sources */,
+				A916A9F01566C9F500362B04 /* ViewController.m in Sources */,
+				A9C800031566CA440002B91F /* TouchLayer.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A9F1E82B155C34A3001C0C37 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -278,6 +399,22 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
+		A916A9E51566C9F500362B04 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A916A9E61566C9F500362B04 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		A916A9F11566C9F500362B04 /* ViewController.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A916A9F21566C9F500362B04 /* en */,
+			);
+			name = ViewController.xib;
+			sourceTree = "<group>";
+		};
 		A9F1E852155C4BBD001C0C37 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -305,6 +442,48 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		A916A9F41566C9F500362B04 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SYSTEM_APPS_DIR)/Xcode.app/Contents/Developer/Library/Frameworks\"",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "GestureCompositorMobile/GestureCompositorMobile-Prefix.pch";
+				INFOPLIST_FILE = "GestureCompositorMobile/GestureCompositorMobile-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		A916A9F51566C9F500362B04 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SYSTEM_APPS_DIR)/Xcode.app/Contents/Developer/Library/Frameworks\"",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "GestureCompositorMobile/GestureCompositorMobile-Prefix.pch";
+				INFOPLIST_FILE = "GestureCompositorMobile/GestureCompositorMobile-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+				VALIDATE_PRODUCT = YES;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
 		A9F1E83C155C34A3001C0C37 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -395,6 +574,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		A916A9F61566C9F500362B04 /* Build configuration list for PBXNativeTarget "GestureCompositorMobile" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A916A9F41566C9F500362B04 /* Debug */,
+				A916A9F51566C9F500362B04 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		A9F1E829155C34A3001C0C37 /* Build configuration list for PBXProject "gesturedrawer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
