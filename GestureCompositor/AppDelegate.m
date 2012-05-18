@@ -132,10 +132,19 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	CALayer * parentLayer = [CALayer layer];
 	videoLayer.frame = CGRectMake(0.0, 0.0, 320.0, 480.0);
 	parentLayer.frame = CGRectMake(0.0, 0.0, 320.0, 480.0);
-//	[parentLayer setGeometryFlipped:YES];
+	[parentLayer setGeometryFlipped:YES];
 	[parentLayer addSublayer:videoLayer];
+	
+	CALayer * testlayer = [CALayer layer];
+	testlayer.frame = CGRectMake(0.0, 0.0, 100.0, 100.0);
+	CGColorRef bgColor = CGColorCreateGenericRGB(0.0, 1.0, 0.0, 1.0);
+	testlayer.backgroundColor = bgColor;
+	CGColorRelease(bgColor);
+	
+	[parentLayer addSublayer:testlayer];
 	// create animation
 	[self setupGestureAnimationsForLayer:parentLayer];
+//	[_playbackView.layer addSublayer:parentLayer];
 	videoComposition.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayer:videoLayer inLayer:parentLayer];
 //	videoComposition.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithAdditionalLayer:parentLayer asTrackID:23];
 	videoComposition.frameDuration = CMTimeMake(1, 30);
