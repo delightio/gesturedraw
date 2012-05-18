@@ -135,13 +135,6 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	[parentLayer setGeometryFlipped:YES];
 	[parentLayer addSublayer:videoLayer];
 	
-	CALayer * testlayer = [CALayer layer];
-	testlayer.frame = CGRectMake(0.0, 0.0, 100.0, 100.0);
-	CGColorRef bgColor = CGColorCreateGenericRGB(0.0, 1.0, 0.0, 1.0);
-	testlayer.backgroundColor = bgColor;
-	CGColorRelease(bgColor);
-	
-	[parentLayer addSublayer:testlayer];
 	// create animation
 	[self setupGestureAnimationsForLayer:parentLayer];
 //	[_playbackView.layer addSublayer:parentLayer];

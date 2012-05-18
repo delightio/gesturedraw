@@ -8,7 +8,7 @@
 
 #import <QuartzCore/QuartzCore.h>
 
-@interface TouchLayer : CAShapeLayer
+@interface TouchLayer : CALayer
 
 @property (nonatomic, strong) NSMutableArray * pathKeyTimes;
 @property (nonatomic, strong) NSMutableArray * opacityKeyTimes;
