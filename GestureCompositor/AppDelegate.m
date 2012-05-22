@@ -71,13 +71,15 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	_player.actionAtItemEnd = AVPlayerActionAtItemEndPause;
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleDidPlayNotification:) name:AVPlayerItemDidPlayToEndTimeNotification object:_playerItem];
 	
+	CGSize vdoSize = _sourceVideoAsset.naturalSize;
 	AVPlayerLayer * theLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
-	theLayer.frame = _playbackView.bounds;
+	theLayer.frame = CGRectMake(0.0, 0.0, vdoSize.width, vdoSize.height);
 	[_playbackView setLayer:theLayer];
 	// create synchronized layer for video playback
 	syncLayer = [AVSynchronizedLayer synchronizedLayerWithPlayerItem:_playerItem];
-	//	syncLayer.bounds = CGRectMake(0.0, 0.0, vdoSize.width, vdoSize.height);
-	syncLayer.frame = CGRectMake(0.0, 0.0, 320.0, 480.0);
+	syncLayer.anchorPoint = CGPointZero;
+	syncLayer.frame = CGRectMake(0.0, 0.0, vdoSize.width, vdoSize.height);
+	syncLayer.sublayerTransform = CATransform3DScale(CATransform3DIdentity, vdoSize.width / 320.0, vdoSize.height / 480.0, 1.0);
 	[syncLayer setGeometryFlipped:YES];
 	
 	[_playbackView.layer addSublayer:syncLayer];
@@ -112,9 +114,9 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 - (IBAction)exportVideo:(id)sender {
 	// create composition from source
 	AVMutableComposition * srcComposition = [AVMutableComposition composition];
-	srcComposition.naturalSize = CGSizeMake(320.0, 480.0);
 	AVMutableCompositionTrack * theTrack = [srcComposition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:10];
 	[theTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, _sourceVideoAsset.duration) ofTrack:[[_sourceVideoAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0] atTime:kCMTimeZero error:nil];
+	CGSize vdoSize = srcComposition.naturalSize;
 	
 	// build "pass through video track"
 	AVMutableVideoComposition * videoComposition = [AVMutableVideoComposition videoComposition];
@@ -130,24 +132,33 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	// prepare animation
 	CALayer * videoLayer = [CALayer layer];
 	CALayer * parentLayer = [CALayer layer];
-	videoLayer.frame = CGRectMake(0.0, 0.0, 320.0, 480.0);
-	parentLayer.frame = CGRectMake(0.0, 0.0, 320.0, 480.0);
-	[parentLayer setGeometryFlipped:YES];
+	CALayer * gestureLayer = [CALayer layer];
 	[parentLayer addSublayer:videoLayer];
+	[parentLayer addSublayer:gestureLayer];
+	
+	[gestureLayer setGeometryFlipped:YES];
+	gestureLayer.sublayerTransform = CATransform3DScale(CATransform3DIdentity, vdoSize.width / 320.0, vdoSize.height / 480.0, 1.0);
+	gestureLayer.anchorPoint = CGPointZero;
+	CGRect theRect = CGRectMake(0.0, 0.0, vdoSize.width, vdoSize.height);
+	videoLayer.frame = theRect;
+	parentLayer.frame = theRect;
+	gestureLayer.frame = theRect;
 	
 	// create animation
-	[self setupGestureAnimationsForLayer:parentLayer];
+	[self setupGestureAnimationsForLayer:gestureLayer];
 //	[_playbackView.layer addSublayer:parentLayer];
 	videoComposition.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayer:videoLayer inLayer:parentLayer];
 //	videoComposition.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithAdditionalLayer:parentLayer asTrackID:23];
 	videoComposition.frameDuration = CMTimeMake(1, 30);
-	videoComposition.renderSize = CGSizeMake(320.0, 480.0);
+	videoComposition.renderSize = vdoSize;
 	
 	NSString * path = [NSHomeDirectory() stringByAppendingPathComponent:@"Desktop/test.mov"];
 	session = [[AVAssetExportSession alloc] initWithAsset:srcComposition presetName:AVAssetExportPreset640x480];
+	session.shouldOptimizeForNetworkUse = YES;
 	session.videoComposition = videoComposition;
 	session.outputURL = [NSURL fileURLWithPath:path];
 	session.outputFileType = AVFileTypeQuickTimeMovie;
+	
 	
 	[session addObserver:self forKeyPath:@"status" options:0 context:NULL];
 	
