@@ -21,6 +21,7 @@ typedef enum {
 	__strong NSMutableSet * unassignedLayerBuffer;
 	__strong AVSynchronizedLayer * syncLayer;
 	__strong AVAssetExportSession * session;
+	NSRect touchBounds;
 }
 
 @property (nonatomic, strong) AVPlayer * player;

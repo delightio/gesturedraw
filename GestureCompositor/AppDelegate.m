@@ -90,9 +90,11 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 //		NSInputStream * inStream = [NSInputStream inputStreamWithFileAtPath:plistFilePath];
 		NSPropertyListFormat listFmt = 0;
 		NSError * err = nil;
-		self.touches = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
+		NSDictionary * touchInfo = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
+		self.touches = [touchInfo objectForKey:@"touches"];
+		touchBounds = NSRectFromString([touchInfo objectForKey:@"touchBounds"]);
 //		self.touches = [NSPropertyListSerialization propertyListWithStream:inStream options:0 format:&listFmt error:&err];
-//		[self setupGestureAnimationsForLayer:syncLayer];
+		[self setupGestureAnimationsForLayer:syncLayer];
 	}
 }
 
