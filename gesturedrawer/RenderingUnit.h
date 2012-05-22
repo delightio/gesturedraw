@@ -21,6 +21,7 @@ typedef enum {
 	__strong NSMutableSet * unassignedLayerBuffer;
 	__strong AVAssetExportSession * session;
 	NSTimeInterval videoDuration;
+	NSRect touchBounds;
 }
 
 @property (nonatomic, strong) NSString * sourceFilePath;

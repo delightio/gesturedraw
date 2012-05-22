@@ -65,6 +65,14 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	passThroughInstruction.layerInstructions = [NSArray arrayWithObject:passThroughLayer];
 	videoComposition.instructions = [NSArray arrayWithObject:passThroughInstruction];
 	
+	// read the touches
+	NSData * propData = [NSData dataWithContentsOfFile:_touchesFilePath];
+	NSPropertyListFormat listFmt = 0;
+	NSError * err = nil;
+	NSDictionary * touchInfo = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
+	self.touches = [touchInfo objectForKey:@"touches"];
+	touchBounds = NSRectFromString([touchInfo objectForKey:@"touchBounds"]);
+	
 	// prepare animation
 	CALayer * videoLayer = [CALayer layer];
 	CALayer * parentLayer = [CALayer layer];
@@ -73,18 +81,12 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	[parentLayer addSublayer:gestureLayer];
 	
 	[gestureLayer setGeometryFlipped:YES];
-	gestureLayer.sublayerTransform = CATransform3DScale(CATransform3DIdentity, vdoSize.width / 320.0, vdoSize.height / 480.0, 1.0);
+	gestureLayer.sublayerTransform = CATransform3DScale(CATransform3DIdentity, vdoSize.width / touchBounds.size.width, vdoSize.height / touchBounds.size.height, 1.0);
 	gestureLayer.anchorPoint = CGPointZero;
 	CGRect theRect = CGRectMake(0.0, 0.0, vdoSize.width, vdoSize.height);
 	videoLayer.frame = theRect;
 	parentLayer.frame = theRect;
 	gestureLayer.frame = theRect;
-	
-	// read the touches
-	NSData * propData = [NSData dataWithContentsOfFile:_touchesFilePath];
-	NSPropertyListFormat listFmt = 0;
-	NSError * err = nil;
-	self.touches = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
 	
 	// create animation
 	[self setupGestureAnimationsForLayer:gestureLayer];
@@ -148,9 +150,6 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 		// time
 		curTimeItval = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
 		touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
-		//		[shapeLayer.pathKeyTimes addObject:touchTime];
-		//		// position of layer at time
-		//		[shapeLayer.pathValues addObject:[NSValue valueWithPoint:NSMakePoint([[touchDict valueForKey:DLLocationXKey] floatValue], [[touchDict valueForKey:DLLocationYKey] floatValue])]];
 		// fade in/out of dot
 		ttype = [[touchDict objectForKey:DLTouchPhaseKey] integerValue];
 		if ( ttype == UITouchPhaseBegan ) {
