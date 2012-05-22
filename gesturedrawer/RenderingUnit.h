@@ -25,9 +25,10 @@ typedef enum {
 
 @property (nonatomic, strong) NSString * sourceFilePath;
 @property (nonatomic, strong) NSString * touchesFilePath;
+@property (nonatomic, strong) NSString * destinationBasePath;
 @property (nonatomic, strong) NSArray * touches;
 
-- (id)initWithVideoAtPath:(NSString *)vdoPath touchesPListPath:(NSString *)tchPath;
+- (id)initWithVideoAtPath:(NSString *)vdoPath touchesPListPath:(NSString *)tchPath destinationPath:(NSString *)dstPath;
 - (void)exportVideoWithCompletionHandler:(void (^)(void))handler;
 
 @end

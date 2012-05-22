@@ -16,8 +16,9 @@ int main(int argc, char * argv[])
 	@autoreleasepool {
 		NSString * vdoFilePath = nil;
 		NSString * plistFilePath = nil;
+		NSString * dstFilePath = nil;
 		int c = 0;
-	    while ( (c = getopt(argc, argv, "p:f:")) != -1 ) {
+	    while ( (c = getopt(argc, argv, "p:f:d:")) != -1 ) {
 			switch (c) {
 				case 'f':
 					if ( optarg ) {
@@ -29,18 +30,23 @@ int main(int argc, char * argv[])
 						plistFilePath = [NSString stringWithCString:optarg encoding:NSUTF8StringEncoding];
 					}
 					break;
+				case 'd':
+					if ( optarg ) {
+						dstFilePath = [NSString stringWithCString:optarg encoding:NSUTF8StringEncoding];
+					}
+					break;
 					
 				default:
 					break;
 			}
 		}
-		if ( vdoFilePath == nil || plistFilePath == nil ) {
+		if ( vdoFilePath == nil || plistFilePath == nil || dstFilePath == nil ) {
 			// error running the command
-			NSLog(@"usage: gesturedrawer -f movie_file -p plist_file");
+			NSLog(@"usage: gesturedrawer -f movie_file -p plist_file -d destination_directory");
 			return 0;
 		}
 		// start the processing pipeline
-		RenderingUnit * rndUnit = [[RenderingUnit alloc] initWithVideoAtPath:vdoFilePath touchesPListPath:plistFilePath];
+		RenderingUnit * rndUnit = [[RenderingUnit alloc] initWithVideoAtPath:vdoFilePath touchesPListPath:plistFilePath destinationPath:dstFilePath];
 		NSCondition * cndLock = [[NSCondition alloc] init];
 		[cndLock lock];
 		[rndUnit exportVideoWithCompletionHandler:^{

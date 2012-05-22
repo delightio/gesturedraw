@@ -23,14 +23,16 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 @implementation RenderingUnit
 @synthesize sourceFilePath = _sourceFilePath;
 @synthesize touchesFilePath = _touchesFilePath;
+@synthesize destinationBasePath = _destinationBasePath;
 @synthesize touches = _touches;
 
-- (id)initWithVideoAtPath:(NSString *)vdoPath touchesPListPath:(NSString *)tchPath {
+- (id)initWithVideoAtPath:(NSString *)vdoPath touchesPListPath:(NSString *)tchPath destinationPath:(NSString *)dstPath {
 	self = [super init];
 	touchIDLayerMapping = [[NSMutableDictionary alloc] initWithCapacity:2];
 	unassignedLayerBuffer = [[NSMutableSet alloc] initWithCapacity:2];
 	_sourceFilePath = vdoPath;
 	_touchesFilePath = tchPath;
+	_destinationBasePath = dstPath;
 	return self;
 }
 
@@ -93,7 +95,7 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	videoComposition.renderSize = vdoSize;
 	
 	NSString * theFileName = [[[_sourceFilePath lastPathComponent] componentsSeparatedByString:@"."] objectAtIndex:0];
-	NSString * path = [NSHomeDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"Desktop/%@.mov", theFileName]];
+	NSString * path = [_destinationBasePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mov", theFileName]];
 	session = [[AVAssetExportSession alloc] initWithAsset:srcComposition presetName:AVAssetExportPreset640x480];
 	session.shouldOptimizeForNetworkUse = YES;
 	session.videoComposition = videoComposition;

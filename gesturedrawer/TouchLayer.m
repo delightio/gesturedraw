@@ -21,6 +21,12 @@
 	[self setOpacity:0.0];
 	
 	NSImage * img = [NSImage imageNamed:@"dot"];
+	if ( img == nil ) {
+		// try opening the dot file from library folder
+		NSURL * baseURL = [[[NSFileManager defaultManager] URLsForDirectory:NSApplicationSupportDirectory inDomains:NSLocalDomainMask] objectAtIndex:0];
+		NSURL * imgURL = [baseURL URLByAppendingPathComponent:@"gesturedrawer/dot.png"];
+		img = [[NSImage alloc] initWithContentsOfURL:imgURL];
+	}
 	self.contents = (id)img;
 	self.bounds = CGRectMake(0.0, 0.0, img.size.width, img.size.height);
 
