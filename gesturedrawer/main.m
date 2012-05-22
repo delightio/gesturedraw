@@ -42,7 +42,7 @@ int main(int argc, char * argv[])
 		}
 		if ( vdoFilePath == nil || plistFilePath == nil || dstFilePath == nil ) {
 			// error running the command
-			NSLog(@"usage: gesturedrawer -f movie_file -p plist_file -d destination_directory");
+			NSLog(@"usage: gesturedrawer -f movie_file -p plist_file -d destination_file");
 			return 0;
 		}
 		// start the processing pipeline
