@@ -47,15 +47,12 @@ int main(int argc, char * argv[])
 		}
 		// start the processing pipeline
 		RenderingUnit * rndUnit = [[RenderingUnit alloc] initWithVideoAtPath:vdoFilePath touchesPListPath:plistFilePath destinationPath:dstFilePath];
-		NSCondition * cndLock = [[NSCondition alloc] init];
-		[cndLock lock];
+		NSConditionLock * cndLock = [[NSConditionLock alloc] initWithCondition:0];
 		[rndUnit exportVideoWithCompletionHandler:^{
-			NSLog(@"video exported");
-			[cndLock signal];
-			[cndLock unlock];
+			[cndLock lock];
+			[cndLock unlockWithCondition:100];
 		}];
-		[cndLock lock];
-		[cndLock wait];
+		[cndLock lockWhenCondition:100];
 		[cndLock unlock];
 	}
     return 0;

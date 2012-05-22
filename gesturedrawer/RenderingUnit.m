@@ -97,16 +97,19 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	videoComposition.renderSize = vdoSize;
 	
 	NSString * theFileName = [[[_sourceFilePath lastPathComponent] componentsSeparatedByString:@"."] objectAtIndex:0];
-	NSString * path = [_destinationBasePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mov", theFileName]];
+	__block NSString * path = [_destinationBasePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mov", theFileName]];
 	session = [[AVAssetExportSession alloc] initWithAsset:srcComposition presetName:AVAssetExportPreset640x480];
 	session.shouldOptimizeForNetworkUse = YES;
 	session.videoComposition = videoComposition;
 	session.outputURL = [NSURL fileURLWithPath:path];
 	session.outputFileType = AVFileTypeQuickTimeMovie;
 	
-	[session addObserver:self forKeyPath:@"status" options:0 context:(void *)DL_STATUS_CONTEXT];
+//	[session addObserver:self forKeyPath:@"status" options:0 context:(void *)DL_STATUS_CONTEXT];
 	
-	[session exportAsynchronouslyWithCompletionHandler:handler];
+	[session exportAsynchronouslyWithCompletionHandler:^{
+		NSLog(@"video exported - %@ %@", path, session.status == AVAssetExportSessionStatusFailed ? session.error : @"no error");
+		handler();
+	}];
 }
 
 - (TouchLayer *)layerForTouch:(NSDictionary *)aTouchDict parentLayer:(CALayer *)pLayer {
