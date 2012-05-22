@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
+#import "RenderingUnit.h"
 
 int main(int argc, char * argv[])
 {
@@ -39,7 +40,17 @@ int main(int argc, char * argv[])
 			return 0;
 		}
 		// start the processing pipeline
-		
+		RenderingUnit * rndUnit = [[RenderingUnit alloc] initWithVideoAtPath:vdoFilePath touchesPListPath:plistFilePath];
+		NSCondition * cndLock = [[NSCondition alloc] init];
+		[cndLock lock];
+		[rndUnit exportVideoWithCompletionHandler:^{
+			NSLog(@"video exported");
+			[cndLock signal];
+			[cndLock unlock];
+		}];
+		[cndLock lock];
+		[cndLock wait];
+		[cndLock unlock];
 	}
     return 0;
 }
