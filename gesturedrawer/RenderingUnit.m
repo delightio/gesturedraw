@@ -124,15 +124,11 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 		double d = 0.0;
 		double minDist = 9999.0;
 		for (TouchLayer * theLayer in onscreenLayerBuffer) {
-			NSLog(@"%f %f", theLayer.previousLocation.x, theLayer.previousLocation.y);
 			d = [theLayer discrepancyWithPreviousLocation:prevLoc];
 			if ( d < minDist ) {
 				shapeLayer = theLayer;
 				minDist = d;
 			}
-		}
-		if ( minDist > 0.0 ) {
-			NSLog(@"not possible");
 		}
 	}
 	return shapeLayer;
@@ -159,9 +155,11 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 		case UITouchPhaseCancelled:
 			// get layer from previous location
 			shapeLayer = [self layerWithPreviousLocation:NSPointFromString([aTouchDict objectForKey:DLTouchPreviousLocationKey])];
-			// this is the last touch of the touch sequence
-			[unassignedLayerBuffer addObject:shapeLayer];
-			[onscreenLayerBuffer removeObject:shapeLayer];
+			if ( shapeLayer ) {
+				// this is the last touch of the touch sequence
+				[unassignedLayerBuffer addObject:shapeLayer];
+				[onscreenLayerBuffer removeObject:shapeLayer];
+			}
 			break;
 			
 		default:
@@ -186,6 +184,7 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	NSPoint curPoint;
 	for (NSDictionary * touchDict in _touches) {
 		shapeLayer = [self layerForTouch:touchDict parentLayer:parentLayer];
+		if ( shapeLayer == nil ) break;
 		// setup the layer's position at time
 		// time
 		curTimeItval = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
