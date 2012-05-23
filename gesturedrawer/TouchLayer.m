@@ -26,6 +26,10 @@
 		NSURL * baseURL = [[[NSFileManager defaultManager] URLsForDirectory:NSApplicationSupportDirectory inDomains:NSLocalDomainMask] objectAtIndex:0];
 		NSURL * imgURL = [baseURL URLByAppendingPathComponent:@"gesturedrawer/dot.png"];
 		img = [[NSImage alloc] initWithContentsOfURL:imgURL];
+		if ( img == nil ) {
+			NSLog(@"Can't load image file at %@\nExport aborted", imgURL);
+			exit(-1);
+		}
 	}
 	self.contents = (id)img;
 	self.bounds = CGRectMake(0.0, 0.0, img.size.width, img.size.height);
