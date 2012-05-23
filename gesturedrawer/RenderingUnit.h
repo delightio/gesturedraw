@@ -20,16 +20,18 @@ typedef enum {
 	__strong NSMutableDictionary * touchIDLayerMapping;
 	__strong NSMutableSet * unassignedLayerBuffer;
 	__strong AVAssetExportSession * session;
-	NSTimeInterval videoDuration;
-	NSRect touchBounds;
 }
 
 @property (nonatomic, strong) NSString * sourceFilePath;
 @property (nonatomic, strong) NSString * touchesFilePath;
 @property (nonatomic, strong) NSString * destinationFilePath;
 @property (nonatomic, strong) NSArray * touches;
+@property (nonatomic) NSRect touchBounds;
+@property (nonatomic) NSTimeInterval videoDuration;
 
 - (id)initWithVideoAtPath:(NSString *)vdoPath touchesPListPath:(NSString *)tchPath destinationPath:(NSString *)dstPath;
 - (void)exportVideoWithCompletionHandler:(void (^)(void))handler;
+
+- (void)setupGestureAnimationsForLayer:(CALayer *)parentLayer;
 
 @end

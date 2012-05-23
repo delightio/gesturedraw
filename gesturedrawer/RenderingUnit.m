@@ -25,6 +25,8 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 @synthesize touchesFilePath = _touchesFilePath;
 @synthesize destinationFilePath = _destinationFilePath;
 @synthesize touches = _touches;
+@synthesize touchBounds = _touchBounds;
+@synthesize videoDuration = _videoDuration;
 
 - (id)initWithVideoAtPath:(NSString *)vdoPath touchesPListPath:(NSString *)tchPath destinationPath:(NSString *)dstPath {
 	self = [super init];
@@ -33,6 +35,14 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	_sourceFilePath = vdoPath;
 	_touchesFilePath = tchPath;
 	_destinationFilePath = dstPath;
+	// read the touches
+	NSData * propData = [NSData dataWithContentsOfFile:_touchesFilePath];
+	NSPropertyListFormat listFmt = 0;
+	NSError * err = nil;
+	NSDictionary * touchInfo = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
+	self.touches = [touchInfo objectForKey:@"touches"];
+	_touchBounds = NSRectFromString([touchInfo objectForKey:@"touchBounds"]);
+	
 	return self;
 }
 
@@ -47,7 +57,7 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 
 - (void)exportVideoWithCompletionHandler:(void (^)(void))handler {
 	AVAsset * srcVdoAsset = [AVAsset assetWithURL:[NSURL fileURLWithPath:_sourceFilePath]];
-	videoDuration = CMTimeGetSeconds(srcVdoAsset.duration);
+	_videoDuration = CMTimeGetSeconds(srcVdoAsset.duration);
 	// create composition from source
 	AVMutableComposition * srcComposition = [AVMutableComposition composition];
 	AVMutableCompositionTrack * theTrack = [srcComposition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:10];
@@ -65,14 +75,6 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	passThroughInstruction.layerInstructions = [NSArray arrayWithObject:passThroughLayer];
 	videoComposition.instructions = [NSArray arrayWithObject:passThroughInstruction];
 	
-	// read the touches
-	NSData * propData = [NSData dataWithContentsOfFile:_touchesFilePath];
-	NSPropertyListFormat listFmt = 0;
-	NSError * err = nil;
-	NSDictionary * touchInfo = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
-	self.touches = [touchInfo objectForKey:@"touches"];
-	touchBounds = NSRectFromString([touchInfo objectForKey:@"touchBounds"]);
-	
 	// prepare animation
 	CALayer * videoLayer = [CALayer layer];
 	CALayer * parentLayer = [CALayer layer];
@@ -81,7 +83,7 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	[parentLayer addSublayer:gestureLayer];
 	
 	[gestureLayer setGeometryFlipped:YES];
-	gestureLayer.sublayerTransform = CATransform3DScale(CATransform3DIdentity, vdoSize.width / touchBounds.size.width, vdoSize.height / touchBounds.size.height, 1.0);
+	gestureLayer.sublayerTransform = CATransform3DScale(CATransform3DIdentity, vdoSize.width / _touchBounds.size.width, vdoSize.height / _touchBounds.size.height, 1.0);
 	gestureLayer.anchorPoint = CGPointZero;
 	CGRect theRect = CGRectMake(0.0, 0.0, vdoSize.width, vdoSize.height);
 	videoLayer.frame = theRect;
@@ -150,14 +152,14 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 		// setup the layer's position at time
 		// time
 		curTimeItval = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
-		touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
+		touchTime = [NSNumber numberWithDouble:curTimeItval / _videoDuration];
 		// fade in/out of dot
 		ttype = [[touchDict objectForKey:DLTouchPhaseKey] integerValue];
 		if ( ttype == UITouchPhaseBegan ) {
 			shapeLayer.startTime = curTimeItval;
 			// fade in effect
 			// effect start time
-			fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval - 0.15) / videoDuration];
+			fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval - 0.15) / _videoDuration];
 			[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
 			// effect end time
 			[shapeLayer.opacityKeyTimes addObject:touchTime];
@@ -170,13 +172,13 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 			if ( curTimeItval - shapeLayer.startTime < DL_MINIMUM_DURATION ) {
 				// we need to show the dot for longer time so that it's visually visible
 				curTimeItval = shapeLayer.startTime + DL_MINIMUM_DURATION;
-				touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
+				touchTime = [NSNumber numberWithDouble:curTimeItval / _videoDuration];
 			}
 			// fade out effect
 			// effect start time
 			[shapeLayer.opacityKeyTimes addObject:touchTime];
 			// effect end time
-			fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval + 0.15) / videoDuration];
+			fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval + 0.15) / _videoDuration];
 			[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
 			[shapeLayer.opacityValues addObject:oneNum];		// start value
 			[shapeLayer.opacityValues addObject:zeroNum];		// end value
@@ -195,13 +197,13 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 		dotFrameAnimation.values = theLayer.pathValues;
 		dotFrameAnimation.keyTimes = theLayer.pathKeyTimes;
 		dotFrameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
-		dotFrameAnimation.duration = videoDuration;
+		dotFrameAnimation.duration = _videoDuration;
 		dotFrameAnimation.removedOnCompletion = NO;
 		
 		fadeFrameAnimation.values = theLayer.opacityValues;
 		fadeFrameAnimation.keyTimes = theLayer.opacityKeyTimes;
 		fadeFrameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
-		fadeFrameAnimation.duration = videoDuration;
+		fadeFrameAnimation.duration = _videoDuration;
 		fadeFrameAnimation.removedOnCompletion = NO;
 		
 		[theLayer addAnimation:fadeFrameAnimation forKey:@"fadeAnimation"];

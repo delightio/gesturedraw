@@ -8,6 +8,7 @@
 
 #import "AppDelegate.h"
 #import "TouchLayer.h"
+#import "RenderingUnit.h"
 #import <crt_externs.h>
 
 static NSString * DLLocationXKey = @"x";
@@ -45,8 +46,9 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	int c = 0;
 	NSString * vdoFilePath = nil;
 	NSString * plistFilePath = nil;
+	NSString * dstFilePath = nil;
 	
-	while ( (c = getopt(argc, argv, "NSDocumentRevisionsDebugModep:f:")) != -1 ) {
+	while ( (c = getopt(argc, argv, "NSDocumentRevisionsDebugMod:ep:f:")) != -1 ) {
 		switch (c) {
 			case 'f':
 				if ( optarg ) {
@@ -56,6 +58,12 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 			case 'p':
 				if ( optarg ) {
 					plistFilePath = [NSString stringWithCString:optarg encoding:NSUTF8StringEncoding];
+				}
+				break;
+				
+			case 'd':
+				if ( optarg ) {
+					dstFilePath = [NSString stringWithCString:optarg encoding:NSUTF8StringEncoding];
 				}
 				break;
 				
@@ -79,23 +87,21 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	syncLayer = [AVSynchronizedLayer synchronizedLayerWithPlayerItem:_playerItem];
 	syncLayer.anchorPoint = CGPointZero;
 	syncLayer.frame = CGRectMake(0.0, 0.0, vdoSize.width, vdoSize.height);
-	syncLayer.sublayerTransform = CATransform3DScale(CATransform3DIdentity, vdoSize.width / 320.0, vdoSize.height / 480.0, 1.0);
+	// setup rendering unit
+	RenderingUnit * rndUnit = [[RenderingUnit alloc] initWithVideoAtPath:vdoFilePath touchesPListPath:plistFilePath destinationPath:dstFilePath];
+	NSRect theRect = rndUnit.touchBounds;
+	rndUnit.videoDuration = CMTimeGetSeconds(_sourceVideoAsset.duration);
+	
+	syncLayer.sublayerTransform = CATransform3DScale(CATransform3DIdentity, vdoSize.width / theRect.size.width, vdoSize.height / theRect.size.height, 1.0);
 	[syncLayer setGeometryFlipped:YES];
+	
+	CGColorRef redColor = CGColorCreateGenericRGB(1.0, 0.0, 0.0, 0.25);
+	syncLayer.backgroundColor = redColor;
+	CGColorRelease(redColor);
 	
 	[_playbackView.layer addSublayer:syncLayer];
 	
-	// open the plist file
-	if ( plistFilePath ) {
-		NSData * propData = [NSData dataWithContentsOfFile:plistFilePath];
-//		NSInputStream * inStream = [NSInputStream inputStreamWithFileAtPath:plistFilePath];
-		NSPropertyListFormat listFmt = 0;
-		NSError * err = nil;
-		NSDictionary * touchInfo = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
-		self.touches = [touchInfo objectForKey:@"touches"];
-		touchBounds = NSRectFromString([touchInfo objectForKey:@"touchBounds"]);
-//		self.touches = [NSPropertyListSerialization propertyListWithStream:inStream options:0 format:&listFmt error:&err];
-		[self setupGestureAnimationsForLayer:syncLayer];
-	}
+	[rndUnit setupGestureAnimationsForLayer:syncLayer];
 }
 
 - (void)handleDidPlayNotification:(NSNotification *)aNotification {
