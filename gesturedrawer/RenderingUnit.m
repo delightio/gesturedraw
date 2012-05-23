@@ -184,7 +184,7 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	NSPoint curPoint;
 	for (NSDictionary * touchDict in _touches) {
 		shapeLayer = [self layerForTouch:touchDict parentLayer:parentLayer];
-		if ( shapeLayer == nil ) break;
+		if ( shapeLayer == nil ) continue;
 		// setup the layer's position at time
 		// time
 		curTimeItval = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
