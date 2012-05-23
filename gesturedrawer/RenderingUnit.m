@@ -9,9 +9,8 @@
 #import "TouchLayer.h"
 #import "RenderingUnit.h"
 
-static NSString * DLLocationXKey = @"x";
-static NSString * DLLocationYKey = @"y";
-static NSString * DLTouchIDKey = @"touchID";
+static NSString * DLTouchCurrentLocationKey = @"curLoc";
+static NSString * DLTouchPreviousLocationKey = @"prevLoc";
 static NSString * DLTouchSequenceNumKey = @"seq";
 static NSString * DLTouchPhaseKey = @"phase";
 static NSString * DLTouchTimeKey = @"time";
@@ -30,8 +29,8 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 
 - (id)initWithVideoAtPath:(NSString *)vdoPath touchesPListPath:(NSString *)tchPath destinationPath:(NSString *)dstPath {
 	self = [super init];
-	touchIDLayerMapping = [[NSMutableDictionary alloc] initWithCapacity:2];
-	unassignedLayerBuffer = [[NSMutableSet alloc] initWithCapacity:2];
+	onscreenLayerBuffer = [[NSMutableArray alloc] initWithCapacity:2];
+	unassignedLayerBuffer = [[NSMutableArray alloc] initWithCapacity:2];
 	_sourceFilePath = vdoPath;
 	_touchesFilePath = tchPath;
 	_destinationFilePath = dstPath;
@@ -40,6 +39,11 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	NSPropertyListFormat listFmt = 0;
 	NSError * err = nil;
 	NSDictionary * touchInfo = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
+	NSString * fmtVersion = [touchInfo objectForKey:@"formatVersion"];
+	if ( fmtVersion == nil || ![fmtVersion isEqualToString:@"0.1"]) {
+		NSLog(@"wrong plist file version, expect version 0.1");
+		[NSApp terminate:nil];
+	}
 	self.touches = [touchInfo objectForKey:@"touches"];
 	_touchBounds = NSRectFromString([touchInfo objectForKey:@"touchBounds"]);
 	
@@ -112,27 +116,58 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	}];
 }
 
-- (TouchLayer *)layerForTouch:(NSDictionary *)aTouchDict parentLayer:(CALayer *)pLayer {
-	NSNumber * aTouchID = [aTouchDict objectForKey:DLTouchIDKey];
-	UITouchPhase ttype = [[aTouchDict objectForKey:DLTouchPhaseKey] integerValue];
-	TouchLayer * shapeLayer = [touchIDLayerMapping objectForKey:aTouchID];
-	if ( shapeLayer == nil ) {
-		shapeLayer = [unassignedLayerBuffer anyObject];
-		if ( shapeLayer ) {
-			[unassignedLayerBuffer removeObject:shapeLayer];
-		} else {
-			// create the layer
-			shapeLayer = [TouchLayer layer];
-			[pLayer addSublayer:shapeLayer];
-		}
-		[touchIDLayerMapping setObject:shapeLayer forKey:aTouchID];
+- (TouchLayer *)layerWithPreviousLocation:(NSPoint)prevLoc {
+	TouchLayer * shapeLayer = nil;
+	if ( [onscreenLayerBuffer count] == 1 ) {
+		shapeLayer = [onscreenLayerBuffer objectAtIndex:0];
 	} else {
-		// check if the touch is the last touch
-		if ( ttype == UITouchPhaseEnded || ttype == UITouchPhaseCancelled ) {
-			// reclaim the layer back to buffer
-			[unassignedLayerBuffer addObject:shapeLayer];
-			[touchIDLayerMapping removeObjectForKey:aTouchID];
+		double d = 0.0;
+		double minDist = 9999.0;
+		for (TouchLayer * theLayer in onscreenLayerBuffer) {
+			NSLog(@"%f %f", theLayer.previousLocation.x, theLayer.previousLocation.y);
+			d = [theLayer discrepancyWithPreviousLocation:prevLoc];
+			if ( d < minDist ) {
+				shapeLayer = theLayer;
+				minDist = d;
+			}
 		}
+		if ( minDist > 0.0 ) {
+			NSLog(@"not possible");
+		}
+	}
+	return shapeLayer;
+}
+
+- (TouchLayer *)layerForTouch:(NSDictionary *)aTouchDict parentLayer:(CALayer *)pLayer {
+	UITouchPhase ttype = [[aTouchDict objectForKey:DLTouchPhaseKey] integerValue];
+	TouchLayer * shapeLayer = nil;//[touchIDLayerMapping objectForKey:aTouchID];
+	switch (ttype) {
+		case UITouchPhaseBegan:
+			// create new touch
+			shapeLayer = [unassignedLayerBuffer lastObject];
+			if ( shapeLayer ) {
+				[unassignedLayerBuffer removeObject:shapeLayer];
+			} else {
+				// create the layer
+				shapeLayer = [TouchLayer layer];
+				[pLayer addSublayer:shapeLayer];
+			}
+			[onscreenLayerBuffer addObject:shapeLayer];
+			break;
+			
+		case UITouchPhaseEnded:
+		case UITouchPhaseCancelled:
+			// get layer from previous location
+			shapeLayer = [self layerWithPreviousLocation:NSPointFromString([aTouchDict objectForKey:DLTouchPreviousLocationKey])];
+			// this is the last touch of the touch sequence
+			[unassignedLayerBuffer addObject:shapeLayer];
+			[onscreenLayerBuffer removeObject:shapeLayer];
+			break;
+			
+		default:
+			// get layer from previous location
+			shapeLayer = [self layerWithPreviousLocation:NSPointFromString([aTouchDict objectForKey:DLTouchPreviousLocationKey])];
+			break;
 	}
 	return shapeLayer;
 }
@@ -147,6 +182,8 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	NSNumber * fadeTimeNum = nil;
 	double curTimeItval;
 	TouchLayer * shapeLayer = nil;
+	NSValue * curPointVal = nil;
+	NSPoint curPoint;
 	for (NSDictionary * touchDict in _touches) {
 		shapeLayer = [self layerForTouch:touchDict parentLayer:parentLayer];
 		// setup the layer's position at time
@@ -155,6 +192,8 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 		touchTime = [NSNumber numberWithDouble:curTimeItval / _videoDuration];
 		// fade in/out of dot
 		ttype = [[touchDict objectForKey:DLTouchPhaseKey] integerValue];
+		curPoint = NSPointFromString([touchDict objectForKey:DLTouchCurrentLocationKey]);
+		curPointVal = [NSValue valueWithPoint:curPoint];
 		if ( ttype == UITouchPhaseBegan ) {
 			shapeLayer.startTime = curTimeItval;
 			// fade in effect
@@ -167,7 +206,7 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 			[shapeLayer.opacityValues addObject:oneNum];		// end value
 			// make sure the dot is "in" the location when animation starts
 			[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
-			[shapeLayer.pathValues addObject:[NSValue valueWithPoint:NSMakePoint([[touchDict valueForKey:DLLocationXKey] floatValue], [[touchDict valueForKey:DLLocationYKey] floatValue])]];
+			[shapeLayer.pathValues addObject:curPointVal];
 		} else if ( ttype == UITouchPhaseCancelled || ttype == UITouchPhaseEnded ) {
 			if ( curTimeItval - shapeLayer.startTime < DL_MINIMUM_DURATION ) {
 				// we need to show the dot for longer time so that it's visually visible
@@ -184,12 +223,13 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 			[shapeLayer.opacityValues addObject:zeroNum];		// end value
 			// make sure the dot is not moving till animation is done
 			[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
-			[shapeLayer.pathValues addObject:[NSValue valueWithPoint:NSMakePoint([[touchDict valueForKey:DLLocationXKey] floatValue], [[touchDict valueForKey:DLLocationYKey] floatValue])]];
+			[shapeLayer.pathValues addObject:curPointVal];
 		}
 		// set paths
 		[shapeLayer.pathKeyTimes addObject:touchTime];
 		// position of layer at time
-		[shapeLayer.pathValues addObject:[NSValue valueWithPoint:NSMakePoint([[touchDict valueForKey:DLLocationXKey] floatValue], [[touchDict valueForKey:DLLocationYKey] floatValue])]];
+		[shapeLayer.pathValues addObject:curPointVal];
+		shapeLayer.previousLocation = curPoint;
 	}
 	for (TouchLayer * theLayer in unassignedLayerBuffer) {
 		CAKeyframeAnimation * dotFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];

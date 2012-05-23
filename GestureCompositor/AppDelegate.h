@@ -23,6 +23,10 @@
 @property (nonatomic, assign) IBOutlet NSWindow *window;
 @property (nonatomic, weak) IBOutlet NSView *playbackView;
 
+@property (nonatomic, strong) NSString * videoPath;
+@property (nonatomic, strong) NSString * touchesPath;
+@property (nonatomic, strong) NSString * exportPath;
+
 - (IBAction)playPlainVideo:(id)sender;
 - (IBAction)exportVideo:(id)sender;
 

@@ -17,8 +17,8 @@ typedef enum {
 } UITouchPhase;
 
 @interface RenderingUnit : NSObject {
-	__strong NSMutableDictionary * touchIDLayerMapping;
-	__strong NSMutableSet * unassignedLayerBuffer;
+	__strong NSMutableArray * onscreenLayerBuffer;
+	__strong NSMutableArray * unassignedLayerBuffer;
 	__strong AVAssetExportSession * session;
 }
 
