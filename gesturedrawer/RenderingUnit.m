@@ -61,11 +61,12 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 
 - (void)exportVideoWithCompletionHandler:(void (^)(void))handler {
 	AVAsset * srcVdoAsset = [AVAsset assetWithURL:[NSURL fileURLWithPath:_sourceFilePath]];
+    AVAssetTrack * originalTrack = [[srcVdoAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
 	_videoDuration = CMTimeGetSeconds(srcVdoAsset.duration);
 	// create composition from source
 	AVMutableComposition * srcComposition = [AVMutableComposition composition];
 	AVMutableCompositionTrack * theTrack = [srcComposition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:10];
-	[theTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, srcVdoAsset.duration) ofTrack:[[srcVdoAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0] atTime:kCMTimeZero error:nil];
+	[theTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, srcVdoAsset.duration) ofTrack:originalTrack atTime:kCMTimeZero error:nil];
 	CGSize vdoSize = srcComposition.naturalSize;
 	
 	// build "pass through video track"
@@ -74,8 +75,13 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	passThroughInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, [srcComposition duration]);
 	
 	AVAssetTrack *videoTrack = [[srcComposition tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
+
 	AVMutableVideoCompositionLayerInstruction *passThroughLayer = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:videoTrack];
-	
+    if (CGAffineTransformEqualToTransform(originalTrack.preferredTransform, CGAffineTransformMakeScale(1, -1))) {
+        // Original video was flipped vertically. Flip the new video vertically as well.
+        // Can't just pass the original transform along since the instruction requires translation to be set.
+        [passThroughLayer setTransform:CGAffineTransformMake(1, 0, 0, -1, 0, vdoSize.height) atTime:kCMTimeZero];
+    }
 	passThroughInstruction.layerInstructions = [NSArray arrayWithObject:passThroughLayer];
 	videoComposition.instructions = [NSArray arrayWithObject:passThroughInstruction];
 	
