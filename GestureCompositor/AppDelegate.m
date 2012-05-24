@@ -8,6 +8,7 @@
 
 #import "AppDelegate.h"
 #import "TouchLayer.h"
+#import "RenderingUnit.h"
 #import <crt_externs.h>
 
 static NSString * DLLocationXKey = @"x";
@@ -35,6 +36,10 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 @synthesize window = _window;
 @synthesize playbackView = _playbackView;
 
+@synthesize videoPath = _videoPath;
+@synthesize touchesPath = _touchesPath;
+@synthesize exportPath = _exportPath;
+
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
 	touchIDLayerMapping = [[NSMutableDictionary alloc] initWithCapacity:4];
@@ -43,19 +48,23 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	int argc = *_NSGetArgc();
 	char ** argv = *_NSGetArgv();
 	int c = 0;
-	NSString * vdoFilePath = nil;
-	NSString * plistFilePath = nil;
 	
-	while ( (c = getopt(argc, argv, "NSDocumentRevisionsDebugModep:f:")) != -1 ) {
+	while ( (c = getopt(argc, argv, "NSDocumentRevisionsDebugMod:ep:f:")) != -1 ) {
 		switch (c) {
 			case 'f':
 				if ( optarg ) {
-					vdoFilePath = [NSString stringWithCString:optarg encoding:NSUTF8StringEncoding];
+					self.videoPath = [NSString stringWithCString:optarg encoding:NSUTF8StringEncoding];
 				}
 				break;
 			case 'p':
 				if ( optarg ) {
-					plistFilePath = [NSString stringWithCString:optarg encoding:NSUTF8StringEncoding];
+					self.touchesPath = [NSString stringWithCString:optarg encoding:NSUTF8StringEncoding];
+				}
+				break;
+				
+			case 'd':
+				if ( optarg ) {
+					self.exportPath = [NSString stringWithCString:optarg encoding:NSUTF8StringEncoding];
 				}
 				break;
 				
@@ -63,7 +72,7 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 				break;
 		}
 	}
-	self.sourceVideoAsset = [AVAsset assetWithURL:[NSURL fileURLWithPath:vdoFilePath]];
+	self.sourceVideoAsset = [AVAsset assetWithURL:[NSURL fileURLWithPath:_videoPath]];
 
 	// Insert code here to initialize your application
 	self.playerItem = [AVPlayerItem playerItemWithAsset:_sourceVideoAsset];
@@ -71,27 +80,29 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	_player.actionAtItemEnd = AVPlayerActionAtItemEndPause;
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleDidPlayNotification:) name:AVPlayerItemDidPlayToEndTimeNotification object:_playerItem];
 	
+	CGSize vdoSize = _sourceVideoAsset.naturalSize;
 	AVPlayerLayer * theLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
-	theLayer.frame = _playbackView.bounds;
+	theLayer.frame = CGRectMake(0.0, 0.0, vdoSize.width, vdoSize.height);
 	[_playbackView setLayer:theLayer];
 	// create synchronized layer for video playback
 	syncLayer = [AVSynchronizedLayer synchronizedLayerWithPlayerItem:_playerItem];
-	//	syncLayer.bounds = CGRectMake(0.0, 0.0, vdoSize.width, vdoSize.height);
-	syncLayer.frame = CGRectMake(0.0, 0.0, 320.0, 480.0);
+	syncLayer.anchorPoint = CGPointZero;
+	syncLayer.frame = CGRectMake(0.0, 0.0, vdoSize.width, vdoSize.height);
+	// setup rendering unit
+	RenderingUnit * rndUnit = [[RenderingUnit alloc] initWithVideoAtPath:_videoPath touchesPListPath:_touchesPath destinationPath:_exportPath];
+	NSRect theRect = rndUnit.touchBounds;
+	rndUnit.videoDuration = CMTimeGetSeconds(_sourceVideoAsset.duration);
+	
+	syncLayer.sublayerTransform = CATransform3DScale(CATransform3DIdentity, vdoSize.width / theRect.size.width, vdoSize.height / theRect.size.height, 1.0);
 	[syncLayer setGeometryFlipped:YES];
+	
+//	CGColorRef redColor = CGColorCreateGenericRGB(1.0, 0.0, 0.0, 0.25);
+//	syncLayer.backgroundColor = redColor;
+//	CGColorRelease(redColor);
 	
 	[_playbackView.layer addSublayer:syncLayer];
 	
-	// open the plist file
-	if ( plistFilePath ) {
-		NSData * propData = [NSData dataWithContentsOfFile:plistFilePath];
-//		NSInputStream * inStream = [NSInputStream inputStreamWithFileAtPath:plistFilePath];
-		NSPropertyListFormat listFmt = 0;
-		NSError * err = nil;
-		self.touches = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
-//		self.touches = [NSPropertyListSerialization propertyListWithStream:inStream options:0 format:&listFmt error:&err];
-//		[self setupGestureAnimationsForLayer:syncLayer];
-	}
+	[rndUnit setupGestureAnimationsForLayer:syncLayer];
 }
 
 - (void)handleDidPlayNotification:(NSNotification *)aNotification {
@@ -110,154 +121,10 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 }
 
 - (IBAction)exportVideo:(id)sender {
-	// create composition from source
-	AVMutableComposition * srcComposition = [AVMutableComposition composition];
-	srcComposition.naturalSize = CGSizeMake(320.0, 480.0);
-	AVMutableCompositionTrack * theTrack = [srcComposition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:10];
-	[theTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, _sourceVideoAsset.duration) ofTrack:[[_sourceVideoAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0] atTime:kCMTimeZero error:nil];
-	
-	// build "pass through video track"
-	AVMutableVideoComposition * videoComposition = [AVMutableVideoComposition videoComposition];
-	AVMutableVideoCompositionInstruction *passThroughInstruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
-	passThroughInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, [srcComposition duration]);
-	
-	AVAssetTrack *videoTrack = [[srcComposition tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
-	AVMutableVideoCompositionLayerInstruction *passThroughLayer = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:videoTrack];
-	
-	passThroughInstruction.layerInstructions = [NSArray arrayWithObject:passThroughLayer];
-	videoComposition.instructions = [NSArray arrayWithObject:passThroughInstruction];
-	
-	// prepare animation
-	CALayer * videoLayer = [CALayer layer];
-	CALayer * parentLayer = [CALayer layer];
-	videoLayer.frame = CGRectMake(0.0, 0.0, 320.0, 480.0);
-	parentLayer.frame = CGRectMake(0.0, 0.0, 320.0, 480.0);
-	[parentLayer setGeometryFlipped:YES];
-	[parentLayer addSublayer:videoLayer];
-	
-	// create animation
-	[self setupGestureAnimationsForLayer:parentLayer];
-//	[_playbackView.layer addSublayer:parentLayer];
-	videoComposition.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayer:videoLayer inLayer:parentLayer];
-//	videoComposition.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithAdditionalLayer:parentLayer asTrackID:23];
-	videoComposition.frameDuration = CMTimeMake(1, 30);
-	videoComposition.renderSize = CGSizeMake(320.0, 480.0);
-	
-	NSString * path = [NSHomeDirectory() stringByAppendingPathComponent:@"Desktop/test.mov"];
-	session = [[AVAssetExportSession alloc] initWithAsset:srcComposition presetName:AVAssetExportPreset640x480];
-	session.videoComposition = videoComposition;
-	session.outputURL = [NSURL fileURLWithPath:path];
-	session.outputFileType = AVFileTypeQuickTimeMovie;
-	
-	[session addObserver:self forKeyPath:@"status" options:0 context:NULL];
-	
-	[session exportAsynchronouslyWithCompletionHandler:^{
-		NSLog(@"export completed");
+	RenderingUnit * rndUnit = [[RenderingUnit alloc] initWithVideoAtPath:_videoPath touchesPListPath:_touchesPath destinationPath:_exportPath];
+	[rndUnit exportVideoWithCompletionHandler:^{
+		NSLog(@"export done");
 	}];
-}
-
-- (TouchLayer *)layerForTouch:(NSDictionary *)aTouchDict parentLayer:(CALayer *)pLayer {
-	NSNumber * aTouchID = [aTouchDict objectForKey:DLTouchIDKey];
-	UITouchPhase ttype = [[aTouchDict objectForKey:DLTouchPhaseKey] integerValue];
-	TouchLayer * shapeLayer = [touchIDLayerMapping objectForKey:aTouchID];
-	if ( shapeLayer == nil ) {
-		shapeLayer = [unassignedLayerBuffer anyObject];
-		if ( shapeLayer ) {
-			[unassignedLayerBuffer removeObject:shapeLayer];
-		} else {
-			// create the layer
-			shapeLayer = [TouchLayer layer];
-			[pLayer addSublayer:shapeLayer];
-		}
-		[touchIDLayerMapping setObject:shapeLayer forKey:aTouchID];
-	} else {
-		// check if the touch is the last touch
-		if ( ttype == UITouchPhaseEnded || ttype == UITouchPhaseCancelled ) {
-			// reclaim the layer back to buffer
-			[unassignedLayerBuffer addObject:shapeLayer];
-			[touchIDLayerMapping removeObjectForKey:aTouchID];
-		}
-	}
-	return shapeLayer;
-}
-
-- (void)setupGestureAnimationsForLayer:(CALayer *)parentLayer {
-	// draw the path from plist
-	double vdoDuration = CMTimeGetSeconds(_playerItem.duration);
-	UITouchPhase ttype;
-	// opacity values array
-	NSNumber * zeroNum = (NSNumber *)kCFBooleanFalse;
-	NSNumber * oneNum = (NSNumber *)kCFBooleanTrue;
-	NSNumber * touchTime = nil;
-	NSNumber * fadeTimeNum = nil;
-	double curTimeItval;
-	TouchLayer * shapeLayer = nil;
-	if ( parentLayer == nil ) parentLayer = syncLayer;
-	for (NSDictionary * touchDict in _touches) {
-		shapeLayer = [self layerForTouch:touchDict parentLayer:parentLayer];
-		// setup the layer's position at time
-		// time
-		curTimeItval = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
-		touchTime = [NSNumber numberWithDouble:curTimeItval / vdoDuration];
-//		[shapeLayer.pathKeyTimes addObject:touchTime];
-//		// position of layer at time
-//		[shapeLayer.pathValues addObject:[NSValue valueWithPoint:NSMakePoint([[touchDict valueForKey:DLLocationXKey] floatValue], [[touchDict valueForKey:DLLocationYKey] floatValue])]];
-		// fade in/out of dot
-		ttype = [[touchDict objectForKey:DLTouchPhaseKey] integerValue];
-		if ( ttype == UITouchPhaseBegan ) {
-			shapeLayer.startTime = curTimeItval;
-			// fade in effect
-			// effect start time
-			fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval - 0.15) / vdoDuration];
-			[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
-			// effect end time
-			[shapeLayer.opacityKeyTimes addObject:touchTime];
-			[shapeLayer.opacityValues addObject:zeroNum];		// start value
-			[shapeLayer.opacityValues addObject:oneNum];		// end value
-			// make sure the dot is "in" the location when animation starts
-			[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
-			[shapeLayer.pathValues addObject:[NSValue valueWithPoint:NSMakePoint([[touchDict valueForKey:DLLocationXKey] floatValue], [[touchDict valueForKey:DLLocationYKey] floatValue])]];
-		} else if ( ttype == UITouchPhaseCancelled || ttype == UITouchPhaseEnded ) {
-			if ( curTimeItval - shapeLayer.startTime < DL_MINIMUM_DURATION ) {
-				// we need to show the dot for longer time so that it's visually visible
-				curTimeItval = shapeLayer.startTime + DL_MINIMUM_DURATION;
-				touchTime = [NSNumber numberWithDouble:curTimeItval / vdoDuration];
-			}
-			// fade out effect
-			// effect start time
-			[shapeLayer.opacityKeyTimes addObject:touchTime];
-			// effect end time
-			fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval + 0.15) / vdoDuration];
-			[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
-			[shapeLayer.opacityValues addObject:oneNum];		// start value
-			[shapeLayer.opacityValues addObject:zeroNum];		// end value
-			// make sure the dot is not moving till animation is done
-			[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
-			[shapeLayer.pathValues addObject:[NSValue valueWithPoint:NSMakePoint([[touchDict valueForKey:DLLocationXKey] floatValue], [[touchDict valueForKey:DLLocationYKey] floatValue])]];
-		}
-		// set paths
-		[shapeLayer.pathKeyTimes addObject:touchTime];
-		// position of layer at time
-		[shapeLayer.pathValues addObject:[NSValue valueWithPoint:NSMakePoint([[touchDict valueForKey:DLLocationXKey] floatValue], [[touchDict valueForKey:DLLocationYKey] floatValue])]];
-	}
-	for (TouchLayer * theLayer in unassignedLayerBuffer) {
-		CAKeyframeAnimation * dotFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
-		CAKeyframeAnimation * fadeFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
-		dotFrameAnimation.values = theLayer.pathValues;
-		dotFrameAnimation.keyTimes = theLayer.pathKeyTimes;
-		dotFrameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
-		dotFrameAnimation.duration = vdoDuration;
-		dotFrameAnimation.removedOnCompletion = NO;
-		
-		fadeFrameAnimation.values = theLayer.opacityValues;
-		fadeFrameAnimation.keyTimes = theLayer.opacityKeyTimes;
-		fadeFrameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
-		fadeFrameAnimation.duration = vdoDuration;
-		fadeFrameAnimation.removedOnCompletion = NO;
-		
-		[theLayer addAnimation:fadeFrameAnimation forKey:@"fadeAnimation"];
-		[theLayer addAnimation:dotFrameAnimation forKey:@"positionAnimation"];
-	}
 }
 
 @end

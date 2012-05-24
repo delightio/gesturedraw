@@ -19,6 +19,11 @@
 		A916A9F91566CA0300362B04 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A916A9F81566CA0300362B04 /* AVFoundation.framework */; };
 		A916A9FB1566CA0A00362B04 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A916A9FA1566CA0A00362B04 /* CoreMedia.framework */; };
 		A95DA48115624C3100B00019 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A95DA48015624C3100B00019 /* CoreMedia.framework */; };
+		A9967769156B99EC00A55D7B /* RenderingUnit.m in Sources */ = {isa = PBXBuildFile; fileRef = A9967768156B99EC00A55D7B /* RenderingUnit.m */; };
+		A996776A156B99EC00A55D7B /* RenderingUnit.m in Sources */ = {isa = PBXBuildFile; fileRef = A9967768156B99EC00A55D7B /* RenderingUnit.m */; };
+		A996776B156BA85700A55D7B /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9F1E868155C4F84001C0C37 /* QuartzCore.framework */; };
+		A996776C156BA86600A55D7B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9F1E849155C4BBD001C0C37 /* Cocoa.framework */; };
+		A996776D156BA87900A55D7B /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A95DA48015624C3100B00019 /* CoreMedia.framework */; };
 		A99DED3A156509020022DD0F /* TouchLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A99DED39156509020022DD0F /* TouchLayer.m */; };
 		A99DED3B156509020022DD0F /* TouchLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A99DED39156509020022DD0F /* TouchLayer.m */; };
 		A9C800031566CA440002B91F /* TouchLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A99DED39156509020022DD0F /* TouchLayer.m */; };
@@ -70,6 +75,8 @@
 		A916A9F81566CA0300362B04 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.1.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		A916A9FA1566CA0A00362B04 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.1.sdk/System/Library/Frameworks/CoreMedia.framework; sourceTree = DEVELOPER_DIR; };
 		A95DA48015624C3100B00019 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		A9967767156B99EC00A55D7B /* RenderingUnit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderingUnit.h; sourceTree = "<group>"; };
+		A9967768156B99EC00A55D7B /* RenderingUnit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderingUnit.m; sourceTree = "<group>"; };
 		A99DED38156509020022DD0F /* TouchLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TouchLayer.h; sourceTree = "<group>"; };
 		A99DED39156509020022DD0F /* TouchLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TouchLayer.m; sourceTree = "<group>"; };
 		A9C800041566CB010002B91F /* 158.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = 158.mp4; sourceTree = "<group>"; };
@@ -118,6 +125,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A996776D156BA87900A55D7B /* CoreMedia.framework in Frameworks */,
+				A996776C156BA86600A55D7B /* Cocoa.framework in Frameworks */,
+				A996776B156BA85700A55D7B /* QuartzCore.framework in Frameworks */,
 				A9F1E842155C34B0001C0C37 /* AVFoundation.framework in Frameworks */,
 				A9F1E834155C34A3001C0C37 /* Foundation.framework in Frameworks */,
 			);
@@ -166,7 +176,6 @@
 		A9F1E824155C34A3001C0C37 = {
 			isa = PBXGroup;
 			children = (
-				A9C8000E1566D1470002B91F /* AssetsLibrary.framework */,
 				A9EAEFE3155D03AB005B17ED /* README */,
 				A9F1E835155C34A3001C0C37 /* gesturedrawer */,
 				A9F1E84F155C4BBD001C0C37 /* GestureCompositor */,
@@ -189,6 +198,7 @@
 		A9F1E832155C34A3001C0C37 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				A9C8000E1566D1470002B91F /* AssetsLibrary.framework */,
 				A9C800081566CBA00002B91F /* QuartzCore.framework */,
 				A916A9FA1566CA0A00362B04 /* CoreMedia.framework */,
 				A916A9F81566CA0300362B04 /* AVFoundation.framework */,
@@ -212,6 +222,8 @@
 				A9F1E838155C34A3001C0C37 /* Supporting Files */,
 				A99DED38156509020022DD0F /* TouchLayer.h */,
 				A99DED39156509020022DD0F /* TouchLayer.m */,
+				A9967767156B99EC00A55D7B /* RenderingUnit.h */,
+				A9967768156B99EC00A55D7B /* RenderingUnit.m */,
 			);
 			path = gesturedrawer;
 			sourceTree = "<group>";
@@ -383,6 +395,7 @@
 			files = (
 				A9F1E837155C34A3001C0C37 /* main.m in Sources */,
 				A99DED3A156509020022DD0F /* TouchLayer.m in Sources */,
+				A9967769156B99EC00A55D7B /* RenderingUnit.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -393,6 +406,7 @@
 				A9F1E856155C4BBD001C0C37 /* main.m in Sources */,
 				A9F1E85D155C4BBD001C0C37 /* AppDelegate.m in Sources */,
 				A99DED3B156509020022DD0F /* TouchLayer.m in Sources */,
+				A996776A156B99EC00A55D7B /* RenderingUnit.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
