@@ -266,6 +266,11 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 		[shapeLayer.pathValues addObject:curPointVal];
 		shapeLayer.previousLocation = curPoint;
 	}
+	// just in case if there's any bug or reason that the onscreenLayerBuffer still contains some layers
+	if ( [onscreenLayerBuffer count] ) {
+		[unassignedLayerBuffer addObjectsFromArray:onscreenLayerBuffer];
+		[onscreenLayerBuffer removeAllObjects];
+	}
 	for (TouchLayer * theLayer in unassignedLayerBuffer) {
 		CAKeyframeAnimation * dotFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
 		CAKeyframeAnimation * fadeFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
