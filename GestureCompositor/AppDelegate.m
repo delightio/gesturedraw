@@ -63,7 +63,7 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 				break;
 				
 			case 'd':
-				if ( optarg ) {
+				if ( optarg && _exportPath == nil) {
 					self.exportPath = [NSString stringWithCString:optarg encoding:NSUTF8StringEncoding];
 				}
 				break;

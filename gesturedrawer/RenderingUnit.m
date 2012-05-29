@@ -108,18 +108,48 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	videoComposition.frameDuration = CMTimeMake(1, 30);
 	videoComposition.renderSize = vdoSize;
 	
-	session = [[AVAssetExportSession alloc] initWithAsset:srcComposition presetName:AVAssetExportPreset640x480];
-	session.shouldOptimizeForNetworkUse = YES;
-	session.videoComposition = videoComposition;
-	session.outputURL = [NSURL fileURLWithPath:_destinationFilePath];
-	session.outputFileType = AVFileTypeQuickTimeMovie;
+	NSError * error = nil;
+	AVAssetWriter * assetWriter = [AVAssetWriter assetWriterWithURL:[NSURL fileURLWithPath:_destinationFilePath] fileType:AVFileTypeMPEG4 error:&error];
+	AVAssetWriterInput * videoInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:[NSDictionary dictionaryWithObjectsAndKeys:AVVideoCodecH264, AVVideoCodecKey, [NSNumber numberWithFloat:vdoSize.width], AVVideoWidthKey, [NSNumber numberWithFloat:vdoSize.height], AVVideoHeightKey, nil]];
+	AVAssetReader * assetReader = [AVAssetReader assetReaderWithAsset:srcComposition error:&error];
+	AVAssetReaderVideoCompositionOutput * videoCompositionOutput = [AVAssetReaderVideoCompositionOutput assetReaderVideoCompositionOutputWithVideoTracks:[NSArray arrayWithObject:videoTrack] videoSettings:nil];
+	videoCompositionOutput.videoComposition = videoComposition;
+	[assetReader addOutput:videoCompositionOutput];
 	
-//	[session addObserver:self forKeyPath:@"status" options:0 context:(void *)DL_STATUS_CONTEXT];
-	
-	[session exportAsynchronouslyWithCompletionHandler:^{
-		NSLog(@"video exported - %@ %@", _destinationFilePath, session.status == AVAssetExportSessionStatusFailed ? session.error : @"no error");
-		handler();
+	[assetWriter addInput:videoInput];
+	assetWriter.shouldOptimizeForNetworkUse = YES;
+	BOOL success = NO;
+	[assetReader startReading];
+	success = [assetWriter startWriting];
+	[assetWriter startSessionAtSourceTime:kCMTimeZero];
+	[videoInput requestMediaDataWhenReadyOnQueue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0) usingBlock:^{
+		while (videoInput.readyForMoreMediaData) {
+			CMSampleBufferRef sampleBuffer = [videoCompositionOutput copyNextSampleBuffer];
+			if ( sampleBuffer ) {
+				[videoInput appendSampleBuffer:sampleBuffer];
+				CFRelease(sampleBuffer);
+			} else {
+				[videoInput markAsFinished];
+				BOOL writeSuccess = [assetWriter finishWriting];
+				NSLog(@"video exported - %@ - %@", _destinationFilePath, writeSuccess ? @"no error" : assetWriter.error);
+				handler();
+				break;
+			}
+		}
 	}];
+	
+//	session = [[AVAssetExportSession alloc] initWithAsset:srcComposition presetName:AVAssetExportPreset640x480];
+//	session.shouldOptimizeForNetworkUse = YES;
+//	session.videoComposition = videoComposition;
+//	session.outputURL = [NSURL fileURLWithPath:_destinationFilePath];
+//	session.outputFileType = AVFileTypeQuickTimeMovie;
+//	
+////	[session addObserver:self forKeyPath:@"status" options:0 context:(void *)DL_STATUS_CONTEXT];
+//	
+//	[session exportAsynchronouslyWithCompletionHandler:^{
+//		NSLog(@"video exported - %@ %@", _destinationFilePath, session.status == AVAssetExportSessionStatusFailed ? session.error : @"no error");
+//		handler();
+//	}];
 }
 
 - (TouchLayer *)layerWithPreviousLocation:(NSPoint)prevLoc {
