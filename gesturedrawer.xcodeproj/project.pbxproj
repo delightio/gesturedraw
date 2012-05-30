@@ -18,6 +18,12 @@
 		A916A9F31566C9F500362B04 /* ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A916A9F11566C9F500362B04 /* ViewController.xib */; };
 		A916A9F91566CA0300362B04 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A916A9F81566CA0300362B04 /* AVFoundation.framework */; };
 		A916A9FB1566CA0A00362B04 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A916A9FA1566CA0A00362B04 /* CoreMedia.framework */; };
+		A93E65411575959C00AA1F20 /* RenderingUnitV02.m in Sources */ = {isa = PBXBuildFile; fileRef = A93E65401575959C00AA1F20 /* RenderingUnitV02.m */; };
+		A93E65421575959C00AA1F20 /* RenderingUnitV02.m in Sources */ = {isa = PBXBuildFile; fileRef = A93E65401575959C00AA1F20 /* RenderingUnitV02.m */; };
+		A93E65431575959C00AA1F20 /* RenderingUnitV02.m in Sources */ = {isa = PBXBuildFile; fileRef = A93E65401575959C00AA1F20 /* RenderingUnitV02.m */; };
+		A93E6547157595BD00AA1F20 /* RenderingUnitV01.m in Sources */ = {isa = PBXBuildFile; fileRef = A93E6546157595BD00AA1F20 /* RenderingUnitV01.m */; };
+		A93E6548157595BD00AA1F20 /* RenderingUnitV01.m in Sources */ = {isa = PBXBuildFile; fileRef = A93E6546157595BD00AA1F20 /* RenderingUnitV01.m */; };
+		A93E6549157595BD00AA1F20 /* RenderingUnitV01.m in Sources */ = {isa = PBXBuildFile; fileRef = A93E6546157595BD00AA1F20 /* RenderingUnitV01.m */; };
 		A95DA48115624C3100B00019 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A95DA48015624C3100B00019 /* CoreMedia.framework */; };
 		A9967769156B99EC00A55D7B /* RenderingUnit.m in Sources */ = {isa = PBXBuildFile; fileRef = A9967768156B99EC00A55D7B /* RenderingUnit.m */; };
 		A996776A156B99EC00A55D7B /* RenderingUnit.m in Sources */ = {isa = PBXBuildFile; fileRef = A9967768156B99EC00A55D7B /* RenderingUnit.m */; };
@@ -74,6 +80,10 @@
 		A916A9F21566C9F500362B04 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/ViewController.xib; sourceTree = "<group>"; };
 		A916A9F81566CA0300362B04 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.1.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		A916A9FA1566CA0A00362B04 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.1.sdk/System/Library/Frameworks/CoreMedia.framework; sourceTree = DEVELOPER_DIR; };
+		A93E653F1575959C00AA1F20 /* RenderingUnitV02.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderingUnitV02.h; sourceTree = "<group>"; };
+		A93E65401575959C00AA1F20 /* RenderingUnitV02.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderingUnitV02.m; sourceTree = "<group>"; };
+		A93E6545157595BD00AA1F20 /* RenderingUnitV01.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderingUnitV01.h; sourceTree = "<group>"; };
+		A93E6546157595BD00AA1F20 /* RenderingUnitV01.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderingUnitV01.m; sourceTree = "<group>"; };
 		A95DA48015624C3100B00019 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		A9967767156B99EC00A55D7B /* RenderingUnit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderingUnit.h; sourceTree = "<group>"; };
 		A9967768156B99EC00A55D7B /* RenderingUnit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderingUnit.m; sourceTree = "<group>"; };
@@ -224,6 +234,10 @@
 				A99DED39156509020022DD0F /* TouchLayer.m */,
 				A9967767156B99EC00A55D7B /* RenderingUnit.h */,
 				A9967768156B99EC00A55D7B /* RenderingUnit.m */,
+				A93E653F1575959C00AA1F20 /* RenderingUnitV02.h */,
+				A93E65401575959C00AA1F20 /* RenderingUnitV02.m */,
+				A93E6545157595BD00AA1F20 /* RenderingUnitV01.h */,
+				A93E6546157595BD00AA1F20 /* RenderingUnitV01.m */,
 			);
 			path = gesturedrawer;
 			sourceTree = "<group>";
@@ -386,6 +400,8 @@
 				A916A9ED1566C9F500362B04 /* AppDelegate.m in Sources */,
 				A916A9F01566C9F500362B04 /* ViewController.m in Sources */,
 				A9C800031566CA440002B91F /* TouchLayer.m in Sources */,
+				A93E65431575959C00AA1F20 /* RenderingUnitV02.m in Sources */,
+				A93E6549157595BD00AA1F20 /* RenderingUnitV01.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -396,6 +412,8 @@
 				A9F1E837155C34A3001C0C37 /* main.m in Sources */,
 				A99DED3A156509020022DD0F /* TouchLayer.m in Sources */,
 				A9967769156B99EC00A55D7B /* RenderingUnit.m in Sources */,
+				A93E65411575959C00AA1F20 /* RenderingUnitV02.m in Sources */,
+				A93E6547157595BD00AA1F20 /* RenderingUnitV01.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -407,6 +425,8 @@
 				A9F1E85D155C4BBD001C0C37 /* AppDelegate.m in Sources */,
 				A99DED3B156509020022DD0F /* TouchLayer.m in Sources */,
 				A996776A156B99EC00A55D7B /* RenderingUnit.m in Sources */,
+				A93E65421575959C00AA1F20 /* RenderingUnitV02.m in Sources */,
+				A93E6548157595BD00AA1F20 /* RenderingUnitV01.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

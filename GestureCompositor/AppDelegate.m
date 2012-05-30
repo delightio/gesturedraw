@@ -8,18 +8,10 @@
 
 #import "AppDelegate.h"
 #import "TouchLayer.h"
-#import "RenderingUnit.h"
+#import "RenderingUnitV01.h"
+#import "RenderingUnitV02.h"
 #import <crt_externs.h>
 
-static NSString * DLLocationXKey = @"x";
-static NSString * DLLocationYKey = @"y";
-static NSString * DLTouchIDKey = @"touchID";
-static NSString * DLTouchSequenceNumKey = @"seq";
-static NSString * DLTouchPhaseKey = @"phase";
-static NSString * DLTouchTimeKey = @"time";
-static NSString * DLTouchTapCountKey = @"tapCount";
-
-#define DL_MINIMUM_DURATION 0.15
 
 @interface AppDelegate (PrivateMethods)
 
@@ -32,7 +24,7 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 @synthesize player = _player;
 @synthesize playerItem = _playerItem;
 @synthesize sourceVideoAsset = _sourceVideoAsset;
-@synthesize touches = _touches;
+@synthesize touchInfo = _touchInfo;
 @synthesize window = _window;
 @synthesize playbackView = _playbackView;
 
@@ -88,8 +80,27 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 	syncLayer = [AVSynchronizedLayer synchronizedLayerWithPlayerItem:_playerItem];
 	syncLayer.anchorPoint = CGPointZero;
 	syncLayer.frame = CGRectMake(0.0, 0.0, vdoSize.width, vdoSize.height);
+	
+	// read the touches
+	NSData * propData = [NSData dataWithContentsOfFile:_touchesPath];
+	NSPropertyListFormat listFmt = 0;
+	NSError * err = nil;
+	self.touchInfo = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
+	NSString * fmtVersion = [_touchInfo objectForKey:@"formatVersion"];
+	if ( fmtVersion == nil || ![fmtVersion isEqualToString:@"0.1"]) {
+		NSLog(@"no version number in plist file");
+		[NSApp terminate:nil];
+	}
+	RenderingUnit * rndUnit = nil;
+	if ( [fmtVersion isEqualToString:@"0.1"] ) {
+		rndUnit = [[RenderingUnitV01 alloc] initWithVideoAtPath:_videoPath destinationPath:_exportPath touchesPropertyList:_touchInfo];
+	} else if ( [fmtVersion isEqualToString:@"0.2"] ) {
+		rndUnit = [[RenderingUnitV02 alloc] initWithVideoAtPath:_videoPath destinationPath:_exportPath touchesPropertyList:_touchInfo];
+	} else {
+		NSLog(@"wrong plist file version, expect version 0.1 or 0.2");
+		[NSApp terminate:nil];
+	}
 	// setup rendering unit
-	RenderingUnit * rndUnit = [[RenderingUnit alloc] initWithVideoAtPath:_videoPath touchesPListPath:_touchesPath destinationPath:_exportPath];
 	NSRect theRect = rndUnit.touchBounds;
 	rndUnit.videoDuration = CMTimeGetSeconds(_sourceVideoAsset.duration);
 	
@@ -121,7 +132,7 @@ static NSString * DLTouchTapCountKey = @"tapCount";
 }
 
 - (IBAction)exportVideo:(id)sender {
-	RenderingUnit * rndUnit = [[RenderingUnit alloc] initWithVideoAtPath:_videoPath touchesPListPath:_touchesPath destinationPath:_exportPath];
+	RenderingUnit * rndUnit = [[RenderingUnit alloc] initWithVideoAtPath:_videoPath destinationPath:_exportPath touchesPropertyList:_touchInfo];
 	[rndUnit exportVideoWithCompletionHandler:^{
 		NSLog(@"export done");
 	}];

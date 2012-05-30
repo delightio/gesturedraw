@@ -19,7 +19,7 @@
 @property (nonatomic, strong) AVPlayer * player;
 @property (nonatomic, strong) AVPlayerItem * playerItem;
 @property (nonatomic, strong) AVAsset * sourceVideoAsset;
-@property (nonatomic, strong) NSArray * touches;
+@property (nonatomic, strong) NSDictionary * touchInfo;
 @property (nonatomic, assign) IBOutlet NSWindow *window;
 @property (nonatomic, weak) IBOutlet NSView *playbackView;
 
