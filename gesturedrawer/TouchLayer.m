@@ -15,6 +15,8 @@
 @synthesize opacityValues = _opacityValues;
 @synthesize startTime = _startTime;
 @synthesize previousLocation = _previousLocation;
+@synthesize previousTimeInterval = _previousTimeInterval;
+@synthesize privateMode = _privateMode;
 
 - (id)init {
 	self = [super init];

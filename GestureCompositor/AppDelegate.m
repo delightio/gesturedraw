@@ -87,7 +87,7 @@
 	NSError * err = nil;
 	self.touchInfo = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
 	NSString * fmtVersion = [_touchInfo objectForKey:@"formatVersion"];
-	if ( fmtVersion == nil || ![fmtVersion isEqualToString:@"0.1"]) {
+	if ( fmtVersion == nil ) {
 		NSLog(@"no version number in plist file");
 		[NSApp terminate:nil];
 	}

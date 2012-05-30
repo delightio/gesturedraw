@@ -10,6 +10,7 @@
 #import "RenderingUnitV02.h"
 
 #define DL_MINIMUM_DURATION 0.15
+#define DL_NORMAL_OPACITY_ANIMATION_DURATION 0.15
 
 @implementation RenderingUnitV02
 
@@ -91,19 +92,21 @@
 			}
 		}
 	}];
-	
-	//	session = [[AVAssetExportSession alloc] initWithAsset:srcComposition presetName:AVAssetExportPreset640x480];
-	//	session.shouldOptimizeForNetworkUse = YES;
-	//	session.videoComposition = videoComposition;
-	//	session.outputURL = [NSURL fileURLWithPath:_destinationFilePath];
-	//	session.outputFileType = AVFileTypeQuickTimeMovie;
-	//	
-	////	[session addObserver:self forKeyPath:@"status" options:0 context:(void *)DL_STATUS_CONTEXT];
-	//	
-	//	[session exportAsynchronouslyWithCompletionHandler:^{
-	//		NSLog(@"video exported - %@ %@", _destinationFilePath, session.status == AVAssetExportSessionStatusFailed ? session.error : @"no error");
-	//		handler();
-	//	}];
+}
+
+- (void)setLayer:(TouchLayer *)shapeLayer fadeIn:(BOOL)aflag atTime:(NSTimeInterval)curTimeItval location:(NSPoint)curLoc {
+	shapeLayer.startTime = curTimeItval;
+	// fade in effect
+	// effect start time
+	NSNumber * fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval - 0.15) / videoDuration];
+	[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
+	// effect end time
+	[shapeLayer.opacityKeyTimes addObject:[NSNumber numberWithDouble:curTimeItval/videoDuration]];
+	[shapeLayer.opacityValues addObject:(NSNumber *)kCFBooleanFalse];		// start value
+	[shapeLayer.opacityValues addObject:(NSNumber *)kCFBooleanTrue];		// end value
+	// make sure the dot is "in" the location when animation starts
+	[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
+	[shapeLayer.pathValues addObject:[NSValue valueWithPoint:curLoc]];
 }
 
 - (void)setupGestureAnimationsForLayer:(CALayer *)parentLayer {
@@ -118,9 +121,11 @@
 	TouchLayer * shapeLayer = nil;
 	NSValue * curPointVal = nil;
 	NSPoint curPoint;
+	BOOL privateTouch;
 	for (NSDictionary * touchDict in touches) {
 		shapeLayer = [self layerForTouch:touchDict parentLayer:parentLayer];
 		if ( shapeLayer == nil ) continue;
+		privateTouch = [[touchDict objectForKey:DLTouchPrivateKey] boolValue];
 		// setup the layer's position at time
 		// time
 		curTimeItval = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
@@ -129,42 +134,79 @@
 		ttype = [[touchDict objectForKey:DLTouchPhaseKey] integerValue];
 		curPoint = NSPointFromString([touchDict objectForKey:DLTouchCurrentLocationKey]);
 		curPointVal = [NSValue valueWithPoint:curPoint];
-		if ( ttype == UITouchPhaseBegan ) {
-			shapeLayer.startTime = curTimeItval;
-			// fade in effect
-			// effect start time
-			fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval - 0.15) / videoDuration];
-			[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
-			// effect end time
-			[shapeLayer.opacityKeyTimes addObject:touchTime];
-			[shapeLayer.opacityValues addObject:zeroNum];		// start value
-			[shapeLayer.opacityValues addObject:oneNum];		// end value
-			// make sure the dot is "in" the location when animation starts
-			[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
-			[shapeLayer.pathValues addObject:curPointVal];
-		} else if ( ttype == UITouchPhaseCancelled || ttype == UITouchPhaseEnded ) {
-			if ( curTimeItval - shapeLayer.startTime < DL_MINIMUM_DURATION ) {
-				// we need to show the dot for longer time so that it's visually visible
-				curTimeItval = shapeLayer.startTime + DL_MINIMUM_DURATION;
-				touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
+		if ( privateTouch && !shapeLayer.privateMode ) {
+			switch (ttype) {
+				case UITouchPhaseMoved:
+				case UITouchPhaseStationary:
+					// hide the layer at the previous location
+					[self setLayer:shapeLayer fadeIn:NO atTime:shapeLayer.previousTimeInterval location:shapeLayer.previousLocation];
+					break;
+					
+				default:
+					break;
 			}
-			// fade out effect
-			// effect start time
-			[shapeLayer.opacityKeyTimes addObject:touchTime];
-			// effect end time
-			fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval + 0.15) / videoDuration];
-			[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
-			[shapeLayer.opacityValues addObject:oneNum];		// start value
-			[shapeLayer.opacityValues addObject:zeroNum];		// end value
-			// make sure the dot is not moving till animation is done
-			[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
+			shapeLayer.privateMode = YES;
+			shapeLayer.previousLocation = curPoint;
+			shapeLayer.previousTimeInterval = curTimeItval;
+		} else if ( !privateTouch && shapeLayer.privateMode ) {
+			// show the layer at current position
+			switch (ttype) {
+				case UITouchPhaseMoved:
+				case UITouchPhaseStationary:
+					// show the layer at current location
+					[self setLayer:shapeLayer fadeIn:YES atTime:curTimeItval location:curPoint];
+					break;
+					
+				default:
+					break;
+			}
+			shapeLayer.privateMode = NO;
+			shapeLayer.previousLocation = curPoint;
+			shapeLayer.previousTimeInterval = curTimeItval;
+		} else if ( shapeLayer.privateMode ) {
+			// layer remains private don't do anything
+			shapeLayer.previousLocation = curPoint;
+			shapeLayer.previousTimeInterval = curTimeItval;
+		} else {
+			// do things normal
+			if ( ttype == UITouchPhaseBegan ) {
+				shapeLayer.startTime = curTimeItval;
+				// fade in effect
+				// effect start time
+				fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval - DL_NORMAL_OPACITY_ANIMATION_DURATION) / videoDuration];
+				[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
+				// effect end time
+				[shapeLayer.opacityKeyTimes addObject:touchTime];
+				[shapeLayer.opacityValues addObject:zeroNum];		// start value
+				[shapeLayer.opacityValues addObject:oneNum];		// end value
+				// make sure the dot is "in" the location when animation starts
+				[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
+				[shapeLayer.pathValues addObject:curPointVal];
+			} else if ( ttype == UITouchPhaseCancelled || ttype == UITouchPhaseEnded ) {
+				if ( curTimeItval - shapeLayer.startTime < DL_MINIMUM_DURATION ) {
+					// we need to show the dot for longer time so that it's visually visible
+					curTimeItval = shapeLayer.startTime + DL_MINIMUM_DURATION;
+					touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
+				}
+				// fade out effect
+				// effect start time
+				[shapeLayer.opacityKeyTimes addObject:touchTime];
+				// effect end time
+				fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval + DL_NORMAL_OPACITY_ANIMATION_DURATION) / videoDuration];
+				[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
+				[shapeLayer.opacityValues addObject:oneNum];		// start value
+				[shapeLayer.opacityValues addObject:zeroNum];		// end value
+				// make sure the dot is not moving till animation is done
+				[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
+				[shapeLayer.pathValues addObject:curPointVal];
+			}
+			// set paths
+			[shapeLayer.pathKeyTimes addObject:touchTime];
+			// position of layer at time
 			[shapeLayer.pathValues addObject:curPointVal];
+			shapeLayer.previousLocation = curPoint;
+			shapeLayer.previousTimeInterval = curTimeItval;
 		}
-		// set paths
-		[shapeLayer.pathKeyTimes addObject:touchTime];
-		// position of layer at time
-		[shapeLayer.pathValues addObject:curPointVal];
-		shapeLayer.previousLocation = curPoint;
 	}
 	// just in case if there's any bug or reason that the onscreenLayerBuffer still contains some layers
 	if ( [onscreenLayerBuffer count] ) {

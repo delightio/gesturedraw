@@ -16,6 +16,8 @@
 @property (nonatomic, strong) NSMutableArray * opacityValues;
 @property (nonatomic, assign) NSTimeInterval startTime;
 @property (nonatomic) NSPoint previousLocation;
+@property (nonatomic) NSTimeInterval previousTimeInterval;
+@property (nonatomic) BOOL privateMode;
 
 - (double)discrepancyWithPreviousLocation:(NSPoint)prevLoc;
 

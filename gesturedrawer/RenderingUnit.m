@@ -63,6 +63,7 @@ NSString * DLTouchPrivateKey = @"private";
 			shapeLayer = [unassignedLayerBuffer lastObject];
 			if ( shapeLayer ) {
 				[unassignedLayerBuffer removeObject:shapeLayer];
+				shapeLayer.privateMode = NO;
 			} else {
 				// create the layer
 				shapeLayer = [TouchLayer layer];
