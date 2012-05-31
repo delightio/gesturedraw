@@ -16,7 +16,7 @@
 @synthesize startTime = _startTime;
 @synthesize previousLocation = _previousLocation;
 @synthesize previousTimeInterval = _previousTimeInterval;
-@synthesize privateMode = _privateMode;
+@synthesize currentSequence = _currentSequence;
 
 - (id)init {
 	self = [super init];

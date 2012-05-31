@@ -15,16 +15,17 @@ NSString * DLTouchSequenceNumKey = @"seq";
 NSString * DLTouchPhaseKey = @"phase";
 NSString * DLTouchTimeKey = @"time";
 NSString * DLTouchTapCountKey = @"tapCount";
-NSString * DLTouchPrivateKey = @"private";
+NSString * DLTouchPrivateFrameKey = @"privateFrame";
 
 @implementation RenderingUnit
+@synthesize parentLayer;
 @synthesize touchBounds;
 @synthesize videoDuration;
 
 - (id)initWithVideoAtPath:(NSString *)vdoPath destinationPath:(NSString *)dstPath touchesPropertyList:(NSDictionary *)tchPlist {
 	self = [super init];
-	onscreenLayerBuffer = [[NSMutableArray alloc] initWithCapacity:2];
-	unassignedLayerBuffer = [[NSMutableArray alloc] initWithCapacity:2];
+	onscreenDotLayerBuffer = [[NSMutableArray alloc] initWithCapacity:2];
+	unassignedDotLayerBuffer = [[NSMutableArray alloc] initWithCapacity:2];
 	sourceFilePath = vdoPath;
 	destinationFilePath = dstPath;
 	touches = [tchPlist objectForKey:@"touches"];
@@ -36,18 +37,23 @@ NSString * DLTouchPrivateKey = @"private";
 - (void)exportVideoWithCompletionHandler:(void (^)(void))handler {
 }
 
-- (TouchLayer *)layerWithPreviousLocation:(NSPoint)prevLoc {
+- (TouchLayer *)layerWithPreviousLocation:(NSPoint)prevLoc forSequence:(NSInteger)seqNum {
 	TouchLayer * shapeLayer = nil;
-	if ( [onscreenLayerBuffer count] == 1 ) {
-		shapeLayer = [onscreenLayerBuffer objectAtIndex:0];
+	if ( [onscreenDotLayerBuffer count] == 1 ) {
+		shapeLayer = [onscreenDotLayerBuffer objectAtIndex:0];
+		shapeLayer.currentSequence = seqNum;
 	} else {
 		double d = 0.0;
 		double minDist = 9999.0;
-		for (TouchLayer * theLayer in onscreenLayerBuffer) {
-			d = [theLayer discrepancyWithPreviousLocation:prevLoc];
-			if ( d < minDist ) {
-				shapeLayer = theLayer;
-				minDist = d;
+		for (TouchLayer * theLayer in onscreenDotLayerBuffer) {
+			if ( theLayer.currentSequence != seqNum ) {
+				// try to do the comparison only when the sequence number of the layer is not the same as the requested one. If they are the same, the layer has been compared and matached another points already.
+				d = [theLayer discrepancyWithPreviousLocation:prevLoc];
+				if ( d < minDist ) {
+					shapeLayer = theLayer;
+					minDist = d;
+					theLayer.currentSequence = seqNum;
+				}
 			}
 		}
 	}
@@ -60,38 +66,38 @@ NSString * DLTouchPrivateKey = @"private";
 	switch (ttype) {
 		case UITouchPhaseBegan:
 			// create new touch
-			shapeLayer = [unassignedLayerBuffer lastObject];
+			shapeLayer = [unassignedDotLayerBuffer lastObject];
 			if ( shapeLayer ) {
-				[unassignedLayerBuffer removeObject:shapeLayer];
-				shapeLayer.privateMode = NO;
+				[unassignedDotLayerBuffer removeObject:shapeLayer];
+//				shapeLayer.privateMode = NO;
 			} else {
 				// create the layer
 				shapeLayer = [TouchLayer layer];
 				[pLayer addSublayer:shapeLayer];
 			}
-			[onscreenLayerBuffer addObject:shapeLayer];
+			[onscreenDotLayerBuffer addObject:shapeLayer];
 			break;
 			
 		case UITouchPhaseEnded:
 		case UITouchPhaseCancelled:
 			// get layer from previous location
-			shapeLayer = [self layerWithPreviousLocation:NSPointFromString([aTouchDict objectForKey:DLTouchPreviousLocationKey])];
+			shapeLayer = [self layerWithPreviousLocation:NSPointFromString([aTouchDict objectForKey:DLTouchPreviousLocationKey]) forSequence:[[aTouchDict objectForKey:DLTouchSequenceNumKey] integerValue]];
 			if ( shapeLayer ) {
 				// this is the last touch of the touch sequence
-				[unassignedLayerBuffer addObject:shapeLayer];
-				[onscreenLayerBuffer removeObject:shapeLayer];
+				[unassignedDotLayerBuffer addObject:shapeLayer];
+				[onscreenDotLayerBuffer removeObject:shapeLayer];
 			}
 			break;
 			
 		default:
 			// get layer from previous location
-			shapeLayer = [self layerWithPreviousLocation:NSPointFromString([aTouchDict objectForKey:DLTouchPreviousLocationKey])];
+			shapeLayer = [self layerWithPreviousLocation:NSPointFromString([aTouchDict objectForKey:DLTouchPreviousLocationKey]) forSequence:[[aTouchDict objectForKey:DLTouchSequenceNumKey] integerValue]];
 			break;
 	}
 	return shapeLayer;
 }
 
-- (void)setupGestureAnimationsForLayer:(CALayer *)parentLayer {
+- (void)setupGestureAnimationsForLayer:(CALayer *)prnLayer {
 }
 
 @end

@@ -15,9 +15,9 @@
 @property (nonatomic, strong) NSMutableArray * pathValues;
 @property (nonatomic, strong) NSMutableArray * opacityValues;
 @property (nonatomic, assign) NSTimeInterval startTime;
-@property (nonatomic) NSPoint previousLocation;
-@property (nonatomic) NSTimeInterval previousTimeInterval;
-@property (nonatomic) BOOL privateMode;
+@property (nonatomic, assign) NSPoint previousLocation;
+@property (nonatomic, assign) NSTimeInterval previousTimeInterval;
+@property (nonatomic, assign) NSInteger currentSequence;
 
 - (double)discrepancyWithPreviousLocation:(NSPoint)prevLoc;
 

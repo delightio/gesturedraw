@@ -24,11 +24,11 @@ extern NSString * DLTouchSequenceNumKey;
 extern NSString * DLTouchPhaseKey;
 extern NSString * DLTouchTimeKey;
 extern NSString * DLTouchTapCountKey;
-extern NSString * DLTouchPrivateKey;
+extern NSString * DLTouchPrivateFrameKey;
 
 @interface RenderingUnit : NSObject {
-	__strong NSMutableArray * onscreenLayerBuffer;
-	__strong NSMutableArray * unassignedLayerBuffer;
+	__strong NSMutableArray * onscreenDotLayerBuffer;
+	__strong NSMutableArray * unassignedDotLayerBuffer;
 	__strong AVAssetExportSession * session;
 	__strong NSString * sourceFilePath;
 	__strong NSString * destinationFilePath;
@@ -39,11 +39,12 @@ extern NSString * DLTouchPrivateKey;
 
 @property (nonatomic) NSRect touchBounds;
 @property (nonatomic) NSTimeInterval videoDuration;
+@property (nonatomic, weak) CALayer * parentLayer;
 
 - (id)initWithVideoAtPath:(NSString *)vdoPath destinationPath:(NSString *)dstPath touchesPropertyList:(NSDictionary *)tchPlist;
 - (void)exportVideoWithCompletionHandler:(void (^)(void))handler;
 - (TouchLayer *)layerForTouch:(NSDictionary *)aTouchDict parentLayer:(CALayer *)pLayer;
 
-- (void)setupGestureAnimationsForLayer:(CALayer *)parentLayer;
+- (void)setupGestureAnimationsForLayer:(CALayer *)prnLayer;
 
 @end

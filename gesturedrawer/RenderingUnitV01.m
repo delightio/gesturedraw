@@ -177,11 +177,11 @@
 		shapeLayer.previousLocation = curPoint;
 	}
 	// just in case if there's any bug or reason that the onscreenLayerBuffer still contains some layers
-	if ( [onscreenLayerBuffer count] ) {
-		[unassignedLayerBuffer addObjectsFromArray:onscreenLayerBuffer];
-		[onscreenLayerBuffer removeAllObjects];
+	if ( [onscreenDotLayerBuffer count] ) {
+		[unassignedDotLayerBuffer addObjectsFromArray:onscreenDotLayerBuffer];
+		[onscreenDotLayerBuffer removeAllObjects];
 	}
-	for (TouchLayer * theLayer in unassignedLayerBuffer) {
+	for (TouchLayer * theLayer in unassignedDotLayerBuffer) {
 		CAKeyframeAnimation * dotFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
 		CAKeyframeAnimation * fadeFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
 		dotFrameAnimation.values = theLayer.pathValues;
