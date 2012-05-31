@@ -15,7 +15,6 @@
 @synthesize opacityValues = _opacityValues;
 @synthesize startTime = _startTime;
 @synthesize previousLocation = _previousLocation;
-@synthesize previousTimeInterval = _previousTimeInterval;
 @synthesize currentSequence = _currentSequence;
 
 - (id)init {

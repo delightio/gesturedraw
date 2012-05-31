@@ -8,6 +8,8 @@
 
 #import "RenderingUnit.h"
 
-@interface RenderingUnitV02 : RenderingUnit
+@interface RenderingUnitV02 : RenderingUnit {
+	__strong NSMutableArray * rectLayerBuffer;
+}
 
 @end

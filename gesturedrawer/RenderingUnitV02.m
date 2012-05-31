@@ -7,12 +7,19 @@
 //
 
 #import "TouchLayer.h"
+#import "RectLayer.h"
 #import "RenderingUnitV02.h"
 
 #define DL_MINIMUM_DURATION 0.15
-#define DL_NORMAL_OPACITY_ANIMATION_DURATION 0.15
+#define DL_NORMAL_OPACITY_ANIMATION_DURATION 0.1
 
 @implementation RenderingUnitV02
+
+- (id)initWithVideoAtPath:(NSString *)vdoPath destinationPath:(NSString *)dstPath touchesPropertyList:(NSDictionary *)tchPlist {
+	self = [super initWithVideoAtPath:vdoPath destinationPath:dstPath touchesPropertyList:tchPlist];
+	rectLayerBuffer = [[NSMutableArray alloc] initWithCapacity:2];
+	return self;
+}
 
 - (void)exportVideoWithCompletionHandler:(void (^)(void))handler {
 	AVAsset * srcVdoAsset = [AVAsset assetWithURL:[NSURL fileURLWithPath:sourceFilePath]];
@@ -110,7 +117,65 @@
 }
 
 - (void)configureRectLayerTouch:(NSDictionary *)touchDict {
-	
+	RectLayer * shapeLayer = nil;
+	CGRect tFrame = NSRectToCGRect(NSRectFromString([touchDict objectForKey:DLTouchPrivateFrameKey]));
+	// get the rect layer of the right size
+	if ( [rectLayerBuffer count] ) {
+		for (shapeLayer in rectLayerBuffer) {
+			if ( CGRectEqualToRect(shapeLayer.frame, tFrame) ) {
+				break;
+			}
+		}
+	}
+	if ( shapeLayer == nil ) {
+		// we can't find any, create one
+		shapeLayer = [RectLayer layer];
+		[rectLayerBuffer addObject:shapeLayer];
+		// set the frame
+		shapeLayer.frame = tFrame;
+		[self.parentLayer addSublayer:shapeLayer];
+	}
+	UITouchPhase ttype = [[touchDict objectForKey:DLTouchPhaseKey] integerValue];
+	NSNumber * fadeTimeNum;
+	NSNumber * zeroNum = (NSNumber *)kCFBooleanFalse;
+	NSNumber * oneNum = (NSNumber *)kCFBooleanTrue;
+	NSTimeInterval curTimeItval = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
+	NSNumber * touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
+	// set layer animation
+	if ( ttype == UITouchPhaseBegan ) {
+		shapeLayer.touchCount = shapeLayer.touchCount + 1;
+		if ( shapeLayer.touchCount == 1 ) {
+			// fade it in
+			shapeLayer.startTime = curTimeItval;
+			// fade in effect
+			// effect start time
+			fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval - DL_NORMAL_OPACITY_ANIMATION_DURATION) / videoDuration];
+			[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
+			// effect end time
+			[shapeLayer.opacityKeyTimes addObject:touchTime];
+			[shapeLayer.opacityValues addObject:zeroNum];		// start value
+			[shapeLayer.opacityValues addObject:oneNum];		// end value
+			// make sure the dot is "in" the location when animation starts
+		}
+	} else if ( ttype == UITouchPhaseCancelled || ttype == UITouchPhaseEnded ) {
+		shapeLayer.touchCount = shapeLayer.touchCount - 1;
+		if ( shapeLayer.touchCount == 0 ) {
+			// calculate minimum time
+			if ( curTimeItval - shapeLayer.startTime < DL_NORMAL_OPACITY_ANIMATION_DURATION ) {
+				// we need to show the dot for longer time so that it's visually visible
+				curTimeItval = shapeLayer.startTime + DL_NORMAL_OPACITY_ANIMATION_DURATION;
+				touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
+			}
+			// fade out effect
+			// effect start time
+			[shapeLayer.opacityKeyTimes addObject:touchTime];
+			// effect end time
+			fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval + DL_NORMAL_OPACITY_ANIMATION_DURATION) / videoDuration];
+			[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
+			[shapeLayer.opacityValues addObject:oneNum];		// start value
+			[shapeLayer.opacityValues addObject:zeroNum];		// end value
+		}
+	}
 }
 
 - (void)configureDistinctTouchPoint:(NSDictionary *)touchDict {
@@ -165,7 +230,6 @@
 	// position of layer at time
 	[shapeLayer.pathValues addObject:curPointVal];
 	shapeLayer.previousLocation = curPoint;
-	shapeLayer.previousTimeInterval = curTimeItval;
 }
 
 - (void)setupGestureAnimationsForLayer:(CALayer *)prnLayer {
@@ -205,6 +269,7 @@
 				[self configureDistinctTouchPoint:item];
 			} else {
 				// this is a rect
+				[self configureRectLayerTouch:touchDict];
 			}
 		} else {
 			NSArray * theTouches = item;
@@ -221,6 +286,7 @@
 			}
 			for (touchDict in tempRectAy) {
 				// these are all rect
+				[self configureRectLayerTouch:touchDict];
 			}
 			[tempRectAy removeAllObjects];
 		}
@@ -247,6 +313,15 @@
 		
 		[theLayer addAnimation:fadeFrameAnimation forKey:@"fadeAnimation"];
 		[theLayer addAnimation:dotFrameAnimation forKey:@"positionAnimation"];
+	}
+	for (RectLayer * theLayer in rectLayerBuffer) {
+		CAKeyframeAnimation * fadeFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
+		fadeFrameAnimation.values = theLayer.opacityValues;
+		fadeFrameAnimation.keyTimes = theLayer.opacityKeyTimes;
+		fadeFrameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
+		fadeFrameAnimation.duration = videoDuration;
+		fadeFrameAnimation.removedOnCompletion = NO;
+		[theLayer addAnimation:fadeFrameAnimation forKey:nil];
 	}
 }
 

@@ -25,6 +25,9 @@
 		A93E6548157595BD00AA1F20 /* RenderingUnitV01.m in Sources */ = {isa = PBXBuildFile; fileRef = A93E6546157595BD00AA1F20 /* RenderingUnitV01.m */; };
 		A93E6549157595BD00AA1F20 /* RenderingUnitV01.m in Sources */ = {isa = PBXBuildFile; fileRef = A93E6546157595BD00AA1F20 /* RenderingUnitV01.m */; };
 		A95DA48115624C3100B00019 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A95DA48015624C3100B00019 /* CoreMedia.framework */; };
+		A96D6AF0157802E000AEC72C /* RectLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A96D6AEF157802E000AEC72C /* RectLayer.m */; };
+		A96D6AF2157802EA00AEC72C /* RectLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A96D6AEF157802E000AEC72C /* RectLayer.m */; };
+		A96D6AF3157802EB00AEC72C /* RectLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A96D6AEF157802E000AEC72C /* RectLayer.m */; };
 		A9967769156B99EC00A55D7B /* RenderingUnit.m in Sources */ = {isa = PBXBuildFile; fileRef = A9967768156B99EC00A55D7B /* RenderingUnit.m */; };
 		A996776A156B99EC00A55D7B /* RenderingUnit.m in Sources */ = {isa = PBXBuildFile; fileRef = A9967768156B99EC00A55D7B /* RenderingUnit.m */; };
 		A996776B156BA85700A55D7B /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9F1E868155C4F84001C0C37 /* QuartzCore.framework */; };
@@ -85,6 +88,8 @@
 		A93E6545157595BD00AA1F20 /* RenderingUnitV01.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderingUnitV01.h; sourceTree = "<group>"; };
 		A93E6546157595BD00AA1F20 /* RenderingUnitV01.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderingUnitV01.m; sourceTree = "<group>"; };
 		A95DA48015624C3100B00019 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		A96D6AEE157802DF00AEC72C /* RectLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RectLayer.h; sourceTree = "<group>"; };
+		A96D6AEF157802E000AEC72C /* RectLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RectLayer.m; sourceTree = "<group>"; };
 		A9967767156B99EC00A55D7B /* RenderingUnit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderingUnit.h; sourceTree = "<group>"; };
 		A9967768156B99EC00A55D7B /* RenderingUnit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderingUnit.m; sourceTree = "<group>"; };
 		A99DED38156509020022DD0F /* TouchLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TouchLayer.h; sourceTree = "<group>"; };
@@ -238,6 +243,8 @@
 				A93E65401575959C00AA1F20 /* RenderingUnitV02.m */,
 				A93E6545157595BD00AA1F20 /* RenderingUnitV01.h */,
 				A93E6546157595BD00AA1F20 /* RenderingUnitV01.m */,
+				A96D6AEE157802DF00AEC72C /* RectLayer.h */,
+				A96D6AEF157802E000AEC72C /* RectLayer.m */,
 			);
 			path = gesturedrawer;
 			sourceTree = "<group>";
@@ -402,6 +409,7 @@
 				A9C800031566CA440002B91F /* TouchLayer.m in Sources */,
 				A93E65431575959C00AA1F20 /* RenderingUnitV02.m in Sources */,
 				A93E6549157595BD00AA1F20 /* RenderingUnitV01.m in Sources */,
+				A96D6AF3157802EB00AEC72C /* RectLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -414,6 +422,7 @@
 				A9967769156B99EC00A55D7B /* RenderingUnit.m in Sources */,
 				A93E65411575959C00AA1F20 /* RenderingUnitV02.m in Sources */,
 				A93E6547157595BD00AA1F20 /* RenderingUnitV01.m in Sources */,
+				A96D6AF0157802E000AEC72C /* RectLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -427,6 +436,7 @@
 				A996776A156B99EC00A55D7B /* RenderingUnit.m in Sources */,
 				A93E65421575959C00AA1F20 /* RenderingUnitV02.m in Sources */,
 				A93E6548157595BD00AA1F20 /* RenderingUnitV01.m in Sources */,
+				A96D6AF2157802EA00AEC72C /* RectLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
