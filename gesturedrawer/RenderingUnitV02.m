@@ -256,6 +256,14 @@
 		prevSeqNum = curSeqNum;
 		idx++;
 	}
+	// perform the last check
+	if ( numTouchesInSeq ) {
+		if ( numTouchesInSeq > 1 ) {
+			[groupArray addObject:[touches subarrayWithRange:NSMakeRange(idx - numTouchesInSeq, numTouchesInSeq)]];
+		} else {
+			[groupArray addObject:[touches objectAtIndex:idx - 1]];
+		}
+	}
 	NSMutableArray * tempRectAy = [NSMutableArray arrayWithCapacity:2];
 	NSDictionary * touchDict = nil;
 	NSString * locStr = nil;
