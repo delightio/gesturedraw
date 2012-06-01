@@ -92,6 +92,20 @@ NSString * DLTouchPrivateFrameKey = @"privateFrame";
 		default:
 			// get layer from previous location
 			shapeLayer = [self layerWithPreviousLocation:NSPointFromString([aTouchDict objectForKey:DLTouchPreviousLocationKey]) forSequence:[[aTouchDict objectForKey:DLTouchSequenceNumKey] integerValue]];
+			if ( shapeLayer == nil ) {
+				// grab whatever layer available
+				// create new touch
+				shapeLayer = [unassignedDotLayerBuffer lastObject];
+				if ( shapeLayer ) {
+					[unassignedDotLayerBuffer removeObject:shapeLayer];
+					//				shapeLayer.privateMode = NO;
+				} else {
+					// create the layer
+					shapeLayer = [TouchLayer layer];
+					[pLayer addSublayer:shapeLayer];
+				}
+				[onscreenDotLayerBuffer addObject:shapeLayer];
+			}
 			break;
 	}
 	return shapeLayer;

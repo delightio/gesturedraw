@@ -16,7 +16,9 @@
 @property (nonatomic, strong) NSMutableArray * opacityValues;
 @property (nonatomic, assign) NSTimeInterval startTime;
 @property (nonatomic, assign) NSPoint previousLocation;
+@property (nonatomic, assign) NSTimeInterval previousTime;
 @property (nonatomic, assign) NSInteger currentSequence;
+@property (nonatomic, assign) BOOL needFadeIn;
 
 - (double)discrepancyWithPreviousLocation:(NSPoint)prevLoc;
 

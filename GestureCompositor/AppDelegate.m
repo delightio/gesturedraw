@@ -132,7 +132,13 @@
 }
 
 - (IBAction)exportVideo:(id)sender {
-	RenderingUnit * rndUnit = [[RenderingUnit alloc] initWithVideoAtPath:_videoPath destinationPath:_exportPath touchesPropertyList:_touchInfo];
+	RenderingUnit * rndUnit = nil;
+	NSString * fmtVersion = [_touchInfo objectForKey:@"formatVersion"];
+	if ( [fmtVersion isEqualToString:@"0.1"] ) {
+		rndUnit = [[RenderingUnitV01 alloc] initWithVideoAtPath:_videoPath destinationPath:_exportPath touchesPropertyList:_touchInfo];
+	} else if ( [fmtVersion isEqualToString:@"0.2"] ) {
+		rndUnit = [[RenderingUnitV02 alloc] initWithVideoAtPath:_videoPath destinationPath:_exportPath touchesPropertyList:_touchInfo];
+	}
 	[rndUnit exportVideoWithCompletionHandler:^{
 		NSLog(@"export done");
 	}];

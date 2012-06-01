@@ -12,6 +12,8 @@
 
 #define DL_MINIMUM_DURATION 0.15
 #define DL_NORMAL_OPACITY_ANIMATION_DURATION 0.1
+#define DL_TOUCH_POINT_TYPE		1000
+#define DL_TOUCH_RECT_TYPE		1001
 
 @implementation RenderingUnitV02
 
@@ -76,16 +78,21 @@
 	AVAssetReader * assetReader = [AVAssetReader assetReaderWithAsset:srcComposition error:&error];
 	AVAssetReaderVideoCompositionOutput * videoCompositionOutput = [AVAssetReaderVideoCompositionOutput assetReaderVideoCompositionOutputWithVideoTracks:[NSArray arrayWithObject:videoTrack] videoSettings:nil];
 	videoCompositionOutput.videoComposition = videoComposition;
+	NSLog(@"can add output: %d", [assetReader canAddOutput:videoCompositionOutput]);
 	[assetReader addOutput:videoCompositionOutput];
 	
 	[assetWriter addInput:videoInput];
 	assetWriter.shouldOptimizeForNetworkUse = YES;
 	BOOL success = NO;
-	[assetReader startReading];
+	success = [assetReader startReading];
+	if ( !success ) {
+		NSLog(@"error reading asset: %@", assetReader.error);
+	}
 	success = [assetWriter startWriting];
 	[assetWriter startSessionAtSourceTime:kCMTimeZero];
 	[videoInput requestMediaDataWhenReadyOnQueue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0) usingBlock:^{
 		while (videoInput.readyForMoreMediaData) {
+			if ( assetReader.status == AVAssetReaderStatusUnknown ) continue;
 			CMSampleBufferRef sampleBuffer = [videoCompositionOutput copyNextSampleBuffer];
 			if ( sampleBuffer ) {
 				[videoInput appendSampleBuffer:sampleBuffer];
@@ -114,6 +121,91 @@
 	// make sure the dot is "in" the location when animation starts
 	[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
 	[shapeLayer.pathValues addObject:[NSValue valueWithPoint:curLoc]];
+}
+
+- (void)showRectLayerForTouch:(NSDictionary *)touchDict {
+	RectLayer * shapeLayer = nil;
+	CGRect tFrame = NSRectToCGRect(NSRectFromString([touchDict objectForKey:DLTouchPrivateFrameKey]));
+	// get the rect layer of the right size
+	if ( [rectLayerBuffer count] ) {
+		for (shapeLayer in rectLayerBuffer) {
+			if ( CGRectEqualToRect(shapeLayer.frame, tFrame) ) {
+				break;
+			}
+		}
+	}
+	if ( shapeLayer == nil ) {
+		// we can't find any, create one
+		shapeLayer = [RectLayer layer];
+		[rectLayerBuffer addObject:shapeLayer];
+		// set the frame
+		shapeLayer.frame = tFrame;
+		[self.parentLayer addSublayer:shapeLayer];
+	}
+	NSNumber * fadeTimeNum;
+	NSNumber * zeroNum = (NSNumber *)kCFBooleanFalse;
+	NSNumber * oneNum = (NSNumber *)kCFBooleanTrue;
+	NSTimeInterval curTimeItval = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
+	NSNumber * touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
+	// set layer animation
+	shapeLayer.touchCount = shapeLayer.touchCount + 1;
+	if ( shapeLayer.touchCount == 1 ) {
+		// fade it in
+		shapeLayer.startTime = curTimeItval;
+		// fade in effect
+		// effect start time
+		fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval - DL_NORMAL_OPACITY_ANIMATION_DURATION) / videoDuration];
+		[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
+		// effect end time
+		[shapeLayer.opacityKeyTimes addObject:touchTime];
+		[shapeLayer.opacityValues addObject:zeroNum];		// start value
+		[shapeLayer.opacityValues addObject:oneNum];		// end value
+		// make sure the dot is "in" the location when animation starts
+	}
+}
+
+- (void)hideRectLayerForTouch:(NSDictionary *)touchDict {
+	RectLayer * shapeLayer = nil;
+	CGRect tFrame = NSRectToCGRect(NSRectFromString([touchDict objectForKey:DLTouchPrivateFrameKey]));
+	// get the rect layer of the right size
+	if ( [rectLayerBuffer count] ) {
+		for (shapeLayer in rectLayerBuffer) {
+			if ( CGRectEqualToRect(shapeLayer.frame, tFrame) ) {
+				break;
+			}
+		}
+	}
+	if ( shapeLayer == nil ) {
+		// we can't find any, create one
+		shapeLayer = [RectLayer layer];
+		[rectLayerBuffer addObject:shapeLayer];
+		// set the frame
+		shapeLayer.frame = tFrame;
+		[self.parentLayer addSublayer:shapeLayer];
+	}
+	NSNumber * fadeTimeNum;
+	NSNumber * zeroNum = (NSNumber *)kCFBooleanFalse;
+	NSNumber * oneNum = (NSNumber *)kCFBooleanTrue;
+	NSTimeInterval curTimeItval = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
+	NSNumber * touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
+	// set layer animation
+	shapeLayer.touchCount = shapeLayer.touchCount - 1;
+	if ( shapeLayer.touchCount == 0 ) {
+		// calculate minimum time
+		if ( curTimeItval - shapeLayer.startTime < DL_NORMAL_OPACITY_ANIMATION_DURATION ) {
+			// we need to show the dot for longer time so that it's visually visible
+			curTimeItval = shapeLayer.startTime + DL_NORMAL_OPACITY_ANIMATION_DURATION;
+			touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
+		}
+		// fade out effect
+		// effect start time
+		[shapeLayer.opacityKeyTimes addObject:touchTime];
+		// effect end time
+		fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval + DL_NORMAL_OPACITY_ANIMATION_DURATION) / videoDuration];
+		[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
+		[shapeLayer.opacityValues addObject:oneNum];		// start value
+		[shapeLayer.opacityValues addObject:zeroNum];		// end value
+	}
 }
 
 - (void)configureRectLayerTouch:(NSDictionary *)touchDict {
@@ -178,9 +270,9 @@
 	}
 }
 
-- (void)configureDistinctTouchPoint:(NSDictionary *)touchDict {
+- (CALayer *)configureDistinctTouchPoint:(NSDictionary *)touchDict {
 	TouchLayer * shapeLayer = [self layerForTouch:touchDict parentLayer:self.parentLayer];
-	if ( shapeLayer == nil ) return;
+	if ( shapeLayer == nil ) return nil;
 	//		privateTouch = [[touchDict objectForKey:DLTouchPrivateKey] boolValue];
 	// setup the layer's position at time
 	// time
@@ -194,7 +286,8 @@
 	NSNumber * zeroNum = (NSNumber *)kCFBooleanFalse;
 	NSNumber * oneNum = (NSNumber *)kCFBooleanTrue;
 	// do things normal
-	if ( ttype == UITouchPhaseBegan ) {
+	if ( ttype == UITouchPhaseBegan || shapeLayer.needFadeIn ) {
+		shapeLayer.needFadeIn = NO;
 		shapeLayer.startTime = curTimeItval;
 		// fade in effect
 		// effect start time
@@ -230,6 +323,42 @@
 	// position of layer at time
 	[shapeLayer.pathValues addObject:curPointVal];
 	shapeLayer.previousLocation = curPoint;
+	shapeLayer.previousTime = curTimeItval;
+	return shapeLayer;
+}
+
+- (BOOL)currentTouch:(NSDictionary *)curItem hasDifferentCompositionWithPreviousTouch:(id)prevItem {
+	if ( [curItem objectForKey:DLTouchPrivateFrameKey] ) {
+		// curItem is a rect
+		if ( [prevItem isKindOfClass:[NSDictionary class]] ) {
+			// check if it's a point or a rect
+			NSDictionary * prevDict = prevItem;
+			if ( [prevDict objectForKey:DLTouchPrivateFrameKey] == nil ) {
+				NSInteger curPhase = [[curItem objectForKey:DLTouchPhaseKey] integerValue];
+				NSInteger prevPhase = [[prevDict objectForKey:DLTouchPhaseKey] integerValue];
+				if ( curPhase == prevPhase || (( curPhase == UITouchPhaseMoved || curPhase == UITouchPhaseStationary ) && ( prevPhase == UITouchPhaseStationary || prevPhase == UITouchPhaseMoved )) ) {
+					// the previous touch is a point. We are at the boundary case.
+					return YES;
+				}
+			}
+		} else {
+			// previous event contain multiple touches
+		}
+	} else {
+		if ( [prevItem isKindOfClass:[NSDictionary class]] ) {
+			NSDictionary * prevDict = prevItem;
+			if ( [prevDict objectForKey:DLTouchPrivateFrameKey] ) {
+				NSInteger curPhase = [[curItem objectForKey:DLTouchPhaseKey] integerValue];
+				NSInteger prevPhase = [[prevDict objectForKey:DLTouchPhaseKey] integerValue];
+				if ( curPhase == prevPhase || (( curPhase == UITouchPhaseMoved || curPhase == UITouchPhaseStationary ) && ( prevPhase == UITouchPhaseStationary || prevPhase == UITouchPhaseMoved )) ) {
+					return YES;
+				}
+			}
+		} else {
+			// previous event contains multiple touches
+		}
+	}
+	return NO;
 }
 
 - (void)setupGestureAnimationsForLayer:(CALayer *)prnLayer {
@@ -265,8 +394,12 @@
 		}
 	}
 	NSMutableArray * tempRectAy = [NSMutableArray arrayWithCapacity:2];
+	NSMutableArray * tempMatchedLayerAy = [NSMutableArray arrayWithCapacity:2];
+	CALayer * matchedLayer;
 	NSDictionary * touchDict = nil;
 	NSString * locStr = nil;
+	idx = 0;
+	NSInteger prevIdx = 0;
 	for (id item in groupArray) {
 		if ( [item isKindOfClass:[NSDictionary class]] ) {
 			// this group has only 1 single touch
@@ -274,10 +407,43 @@
 			locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
 			if ( locStr ) {
 				// this is a touch point
+				// check if we are moving out from a private view
+				if ( [self currentTouch:touchDict hasDifferentCompositionWithPreviousTouch:[groupArray objectAtIndex:prevIdx]] ) {
+					
+					// hide the rect
+					[self hideRectLayerForTouch:[groupArray objectAtIndex:prevIdx]];
+				}
 				[self configureDistinctTouchPoint:item];
 			} else {
 				// this is a rect
-				[self configureRectLayerTouch:touchDict];
+				// check if this event has the same composition as previous event
+				if ( [self currentTouch:touchDict hasDifferentCompositionWithPreviousTouch:[groupArray objectAtIndex:prevIdx]] ) {
+					// different composition, we need to fade out the odd one
+					// Dig up the previous dot layer and fade it out
+					if ( [onscreenDotLayerBuffer count] == 1 ) {
+						TouchLayer * shapeLayer = [onscreenDotLayerBuffer objectAtIndex:0];
+						NSTimeInterval curTimeItval = shapeLayer.previousTime;
+						NSNumber * fadeTimeNum;
+						// fade the shape layer
+						fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval + DL_NORMAL_OPACITY_ANIMATION_DURATION) / videoDuration];
+						// fade out effect
+						// effect start time
+						[shapeLayer.opacityKeyTimes addObject:[NSNumber numberWithDouble:curTimeItval / videoDuration]];
+						// effect end time
+						[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
+						[shapeLayer.opacityValues addObject:(NSNumber *)kCFBooleanTrue];		// start value
+						[shapeLayer.opacityValues addObject:(NSNumber *)kCFBooleanFalse];		// end value
+						// make sure the dot is not moving till animation is done
+						[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
+						[shapeLayer.pathValues addObject:[NSValue valueWithPoint:shapeLayer.previousLocation]];
+						[unassignedDotLayerBuffer addObject:shapeLayer];
+						[onscreenDotLayerBuffer removeObjectAtIndex:0];
+						shapeLayer.needFadeIn = YES;
+					}
+					[self showRectLayerForTouch:touchDict];
+				} else {
+					[self configureRectLayerTouch:touchDict];
+				}
 			}
 		} else {
 			NSArray * theTouches = item;
@@ -286,18 +452,24 @@
 				locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
 				if ( locStr ) {
 					// this is a touch point, perform the normal logic
-					[self configureDistinctTouchPoint:touchDict];
+					matchedLayer = [self configureDistinctTouchPoint:touchDict];
+					if ( matchedLayer ) [tempMatchedLayerAy addObject:matchedLayer];
 				} else {
 					// this is a rect
 					[tempRectAy addObject:touchDict];
 				}
 			}
-			for (touchDict in tempRectAy) {
-				// these are all rect
-				[self configureRectLayerTouch:touchDict];
+			if ( [tempRectAy count] ) {
+				// there's rect in this set of event. check with the previous event to see if we need to do anything
+				for (touchDict in tempRectAy) {
+					// these are all rect
+					[self configureRectLayerTouch:touchDict];
+				}
+				[tempRectAy removeAllObjects];
 			}
-			[tempRectAy removeAllObjects];
+			[tempMatchedLayerAy removeAllObjects];
 		}
+		prevIdx = idx++;
 	}
 	// just in case if there's any bug or reason that the onscreenLayerBuffer still contains some layers
 	if ( [onscreenDotLayerBuffer count] ) {

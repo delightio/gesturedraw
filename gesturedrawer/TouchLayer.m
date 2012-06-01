@@ -15,7 +15,9 @@
 @synthesize opacityValues = _opacityValues;
 @synthesize startTime = _startTime;
 @synthesize previousLocation = _previousLocation;
+@synthesize previousTime = _previousTime;
 @synthesize currentSequence = _currentSequence;
+@synthesize needFadeIn = _needFadeIn;
 
 - (id)init {
 	self = [super init];
@@ -33,6 +35,7 @@
 			exit(-1);
 		}
 	}
+	_needFadeIn = YES;
 	self.contents = (id)img;
 	self.bounds = CGRectMake(0.0, 0.0, img.size.width, img.size.height);
 
