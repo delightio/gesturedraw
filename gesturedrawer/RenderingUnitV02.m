@@ -123,6 +123,13 @@
 	[shapeLayer.pathValues addObject:[NSValue valueWithPoint:curLoc]];
 }
 
+- (double)distanceOfPoint:(NSPoint)aPoint toRect:(NSRect)aRect {
+	NSPoint rectMidPoint = NSMakePoint(aRect.origin.x + aRect.size.width / 2.0, aRect.origin.y + aRect.size.height / 2.0);
+	double xDist = aPoint.x - rectMidPoint.x;
+	double yDist = aPoint.y - rectMidPoint.y;
+	return sqrt((xDist * xDist) + (yDist * yDist));
+}
+
 - (void)showRectLayerForTouch:(NSDictionary *)touchDict {
 	RectLayer * shapeLayer = nil;
 	CGRect tFrame = NSRectToCGRect(NSRectFromString([touchDict objectForKey:DLTouchPrivateFrameKey]));
@@ -149,6 +156,7 @@
 	NSNumber * touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
 	// set layer animation
 	shapeLayer.touchCount = shapeLayer.touchCount + 1;
+	shapeLayer.previousTime = curTimeItval;
 	if ( shapeLayer.touchCount == 1 ) {
 		// fade it in
 		shapeLayer.startTime = curTimeItval;
@@ -190,6 +198,8 @@
 	NSNumber * touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
 	// set layer animation
 	shapeLayer.touchCount = shapeLayer.touchCount - 1;
+	shapeLayer.previousTime = curTimeItval;
+	shapeLayer.currentSequence = [[touchDict objectForKey:DLTouchSequenceNumKey] integerValue];
 	if ( shapeLayer.touchCount == 0 ) {
 		// calculate minimum time
 		if ( curTimeItval - shapeLayer.startTime < DL_NORMAL_OPACITY_ANIMATION_DURATION ) {
@@ -205,7 +215,33 @@
 		[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
 		[shapeLayer.opacityValues addObject:oneNum];		// start value
 		[shapeLayer.opacityValues addObject:zeroNum];		// end value
+		shapeLayer.needFadeIn = YES;
 	}
+}
+
+- (void)hideRectLayer:(RectLayer *)shapeLayer {
+	NSNumber * fadeTimeNum;
+	NSNumber * zeroNum = (NSNumber *)kCFBooleanFalse;
+	NSNumber * oneNum = (NSNumber *)kCFBooleanTrue;
+	NSTimeInterval curTimeItval = shapeLayer.previousTime;
+	NSNumber * touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
+	// set layer animation
+	shapeLayer.touchCount = 0;
+	if ( curTimeItval - shapeLayer.startTime < DL_NORMAL_OPACITY_ANIMATION_DURATION ) {
+		// we need to show the dot for longer time so that it's visually visible
+		curTimeItval = shapeLayer.startTime + DL_NORMAL_OPACITY_ANIMATION_DURATION;
+		touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
+	}
+	// fade out effect
+	// effect start time
+	[shapeLayer.opacityKeyTimes addObject:touchTime];
+	// effect end time
+	fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval + DL_NORMAL_OPACITY_ANIMATION_DURATION) / videoDuration];
+	[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
+	[shapeLayer.opacityValues addObject:oneNum];		// start value
+	[shapeLayer.opacityValues addObject:zeroNum];		// end value
+	shapeLayer.previousTime = curTimeItval + DL_NORMAL_OPACITY_ANIMATION_DURATION;
+	shapeLayer.needFadeIn = YES;
 }
 
 - (void)configureRectLayerTouch:(NSDictionary *)touchDict {
@@ -234,7 +270,7 @@
 	NSTimeInterval curTimeItval = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
 	NSNumber * touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
 	// set layer animation
-	if ( ttype == UITouchPhaseBegan ) {
+	if ( ttype == UITouchPhaseBegan || shapeLayer.needFadeIn ) {
 		shapeLayer.touchCount = shapeLayer.touchCount + 1;
 		if ( shapeLayer.touchCount == 1 ) {
 			// fade it in
@@ -248,6 +284,7 @@
 			[shapeLayer.opacityValues addObject:zeroNum];		// start value
 			[shapeLayer.opacityValues addObject:oneNum];		// end value
 			// make sure the dot is "in" the location when animation starts
+			shapeLayer.needFadeIn = NO;
 		}
 	} else if ( ttype == UITouchPhaseCancelled || ttype == UITouchPhaseEnded ) {
 		shapeLayer.touchCount = shapeLayer.touchCount - 1;
@@ -266,8 +303,11 @@
 			[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
 			[shapeLayer.opacityValues addObject:oneNum];		// start value
 			[shapeLayer.opacityValues addObject:zeroNum];		// end value
+			shapeLayer.needFadeIn = YES;
 		}
 	}
+	shapeLayer.previousTime = curTimeItval;
+	shapeLayer.currentSequence = [[touchDict objectForKey:DLTouchSequenceNumKey] integerValue];
 }
 
 - (CALayer *)configureDistinctTouchPoint:(NSDictionary *)touchDict {
@@ -327,35 +367,87 @@
 	return shapeLayer;
 }
 
-- (BOOL)currentTouch:(NSDictionary *)curItem hasDifferentCompositionWithPreviousTouch:(id)prevItem {
-	if ( [curItem objectForKey:DLTouchPrivateFrameKey] ) {
-		// curItem is a rect
-		if ( [prevItem isKindOfClass:[NSDictionary class]] ) {
-			// check if it's a point or a rect
-			NSDictionary * prevDict = prevItem;
+//- (BOOL)currentTouch:(NSDictionary *)curItem hasDifferentCompositionWithPreviousTouch:(id)prevItem {
+//	if ( [curItem objectForKey:DLTouchPrivateFrameKey] ) {
+//		// curItem is a rect
+//		if ( [prevItem isKindOfClass:[NSDictionary class]] ) {
+//			// check if it's a point or a rect
+//			NSDictionary * prevDict = prevItem;
+//			if ( [prevDict objectForKey:DLTouchPrivateFrameKey] == nil ) {
+//				NSInteger curPhase = [[curItem objectForKey:DLTouchPhaseKey] integerValue];
+//				NSInteger prevPhase = [[prevDict objectForKey:DLTouchPhaseKey] integerValue];
+//				if ( curPhase == prevPhase || (( curPhase == UITouchPhaseMoved || curPhase == UITouchPhaseStationary ) && ( prevPhase == UITouchPhaseStationary || prevPhase == UITouchPhaseMoved )) ) {
+//					// the previous touch is a point. We are at the boundary case.
+//					return YES;
+//				}
+//			}
+//		} else {
+//			// previous event contain multiple touches
+//		}
+//	} else {
+//		if ( [prevItem isKindOfClass:[NSDictionary class]] ) {
+//			NSDictionary * prevDict = prevItem;
+//			if ( [prevDict objectForKey:DLTouchPrivateFrameKey] ) {
+//				NSInteger curPhase = [[curItem objectForKey:DLTouchPhaseKey] integerValue];
+//				NSInteger prevPhase = [[prevDict objectForKey:DLTouchPhaseKey] integerValue];
+//				if ( curPhase == prevPhase || (( curPhase == UITouchPhaseMoved || curPhase == UITouchPhaseStationary ) && ( prevPhase == UITouchPhaseStationary || prevPhase == UITouchPhaseMoved )) ) {
+//					return YES;
+//				}
+//			}
+//		} else {
+//			// previous event contains multiple touches
+//		}
+//	}
+//	return NO;
+//}
+
+- (BOOL)currentTouch:(id)curItem hasDifferentCompositionWithPreviousTouch:(id)prevItem {
+	// we want to check whether the previous set of touches belongs to the same event as the current set of touches.
+	NSDictionary * prevDict;
+	if ( [curItem isKindOfClass:[NSDictionary class]] && [prevItem isKindOfClass:[NSDictionary class]] ) {
+		prevDict = prevItem;
+		if ( [curItem objectForKey:DLTouchPrivateFrameKey] ) {
+			// curItem is a rect
 			if ( [prevDict objectForKey:DLTouchPrivateFrameKey] == nil ) {
 				NSInteger curPhase = [[curItem objectForKey:DLTouchPhaseKey] integerValue];
 				NSInteger prevPhase = [[prevDict objectForKey:DLTouchPhaseKey] integerValue];
-				if ( curPhase == prevPhase || (( curPhase == UITouchPhaseMoved || curPhase == UITouchPhaseStationary ) && ( prevPhase == UITouchPhaseStationary || prevPhase == UITouchPhaseMoved )) ) {
+				if ( curPhase == prevPhase || (( curPhase == UITouchPhaseMoved || curPhase == UITouchPhaseStationary ) && ( prevPhase == UITouchPhaseBegan || prevPhase == UITouchPhaseStationary || prevPhase == UITouchPhaseMoved )) ) {
 					// the previous touch is a point. We are at the boundary case.
 					return YES;
 				}
 			}
 		} else {
-			// previous event contain multiple touches
-		}
-	} else {
-		if ( [prevItem isKindOfClass:[NSDictionary class]] ) {
-			NSDictionary * prevDict = prevItem;
+			// curItem is point
 			if ( [prevDict objectForKey:DLTouchPrivateFrameKey] ) {
 				NSInteger curPhase = [[curItem objectForKey:DLTouchPhaseKey] integerValue];
 				NSInteger prevPhase = [[prevDict objectForKey:DLTouchPhaseKey] integerValue];
-				if ( curPhase == prevPhase || (( curPhase == UITouchPhaseMoved || curPhase == UITouchPhaseStationary ) && ( prevPhase == UITouchPhaseStationary || prevPhase == UITouchPhaseMoved )) ) {
+				if ( curPhase == prevPhase || (( curPhase == UITouchPhaseMoved || curPhase == UITouchPhaseStationary ) && ( prevPhase == UITouchPhaseBegan || prevPhase == UITouchPhaseStationary || prevPhase == UITouchPhaseMoved )) ) {
 					return YES;
 				}
 			}
-		} else {
-			// previous event contains multiple touches
+		}
+	} else if ( [curItem isKindOfClass:[NSArray class]] && [prevItem isKindOfClass:[NSArray class]] ) {
+		if ( [curItem count] == [prevItem count] ) {
+			// we need to do some checking
+			NSInteger thePhase;
+			BOOL needMoreChecking = YES;
+			for (NSDictionary * curDict in curItem) {
+				thePhase = [[curDict objectForKey:DLTouchPhaseKey] integerValue];
+				if ( thePhase != UITouchPhaseMoved && thePhase != UITouchPhaseStationary ) {
+					needMoreChecking = NO;
+					break;
+				}
+			}
+			if ( needMoreChecking ) {
+				for (prevDict in prevItem) {
+					thePhase = [[prevDict objectForKey:DLTouchPhaseKey] integerValue];
+					if ( thePhase != UITouchPhaseBegan && thePhase != UITouchPhaseStationary && thePhase != UITouchPhaseMoved ) {
+						needMoreChecking = NO;
+						break;
+					}
+				}
+			}
+			return needMoreChecking;
 		}
 	}
 	return NO;
@@ -393,9 +485,6 @@
 			[groupArray addObject:[touches objectAtIndex:idx - 1]];
 		}
 	}
-	NSMutableArray * tempRectAy = [NSMutableArray arrayWithCapacity:2];
-	NSMutableArray * tempMatchedLayerAy = [NSMutableArray arrayWithCapacity:2];
-	CALayer * matchedLayer;
 	NSDictionary * touchDict = nil;
 	NSString * locStr = nil;
 	idx = 0;
@@ -409,7 +498,6 @@
 				// this is a touch point
 				// check if we are moving out from a private view
 				if ( [self currentTouch:touchDict hasDifferentCompositionWithPreviousTouch:[groupArray objectAtIndex:prevIdx]] ) {
-					
 					// hide the rect
 					[self hideRectLayerForTouch:[groupArray objectAtIndex:prevIdx]];
 				}
@@ -447,27 +535,46 @@
 			}
 		} else {
 			NSArray * theTouches = item;
-			for (touchDict  in theTouches) {
-				// perform checking with point first
-				locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
-				if ( locStr ) {
-					// this is a touch point, perform the normal logic
-					matchedLayer = [self configureDistinctTouchPoint:touchDict];
-					if ( matchedLayer ) [tempMatchedLayerAy addObject:matchedLayer];
-				} else {
-					// this is a rect
-					[tempRectAy addObject:touchDict];
+			if ( [self currentTouch:item hasDifferentCompositionWithPreviousTouch:[groupArray objectAtIndex:prevIdx]] ) {
+				// draw touch point first
+				NSInteger curSeqNum = 0;
+				
+				for (touchDict  in theTouches) {
+					if ( curSeqNum == 0 ) {
+						curSeqNum = [[touchDict objectForKey:DLTouchSequenceNumKey] integerValue];
+					}
+					// perform checking with point first
+					locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
+					if ( locStr ) {
+						// this is a touch point, perform the normal logic
+						[self configureDistinctTouchPoint:touchDict];
+					} else {
+						// this is a rect
+						[self configureRectLayerTouch:touchDict];
+					}
+				}
+				for (TouchLayer * theLayer in onscreenDotLayerBuffer) {
+					if ( theLayer.currentSequence != curSeqNum ) {
+						// dump this layer
+					}
+				}
+				for (RectLayer * theLayer in rectLayerBuffer) {
+					if ( theLayer.currentSequence != curSeqNum ) {
+						if ( !theLayer.needFadeIn ) [self hideRectLayer:theLayer];
+						theLayer.currentSequence = curSeqNum;
+					}
+				}
+			} else {
+				// normal drawing
+				for (touchDict in theTouches) {
+					locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
+					if ( locStr ) {
+						[self configureDistinctTouchPoint:touchDict];
+					} else {
+						[self configureRectLayerTouch:touchDict];
+					}
 				}
 			}
-			if ( [tempRectAy count] ) {
-				// there's rect in this set of event. check with the previous event to see if we need to do anything
-				for (touchDict in tempRectAy) {
-					// these are all rect
-					[self configureRectLayerTouch:touchDict];
-				}
-				[tempRectAy removeAllObjects];
-			}
-			[tempMatchedLayerAy removeAllObjects];
 		}
 		prevIdx = idx++;
 	}

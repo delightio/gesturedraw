@@ -12,9 +12,10 @@
 @synthesize opacityKeyTimes = _opacityKeyTimes;
 @synthesize opacityValues = _opacityValues;
 @synthesize startTime = _startTime;
-@synthesize previousLocation = _previousLocation;
+@synthesize previousTime = _previousTime;
 @synthesize currentSequence = _currentSequence;
 @synthesize touchCount = _touchCount;
+@synthesize needFadeIn = _needFadeIn;
 
 - (id)init {
 	self = [super init];
@@ -25,7 +26,7 @@
 		
 	_opacityKeyTimes = [[NSMutableArray alloc] initWithCapacity:10];
 	_opacityValues = [[NSMutableArray alloc] initWithCapacity:10];
-	_previousLocation = NSMakePoint(-9999.0, -9999.0);
+	_needFadeIn = YES;
 	[self setShouldRasterize:YES];
 	
 	CGColorRelease(blueColor);
