@@ -244,6 +244,10 @@
 	shapeLayer.needFadeIn = YES;
 }
 
+- (void)hideTouchLayer:(TouchLayer *)shapeLayer {
+	
+}
+
 - (void)configureRectLayerTouch:(NSDictionary *)touchDict {
 	RectLayer * shapeLayer = nil;
 	CGRect tFrame = NSRectToCGRect(NSRectFromString([touchDict objectForKey:DLTouchPrivateFrameKey]));
@@ -493,6 +497,7 @@
 		if ( [item isKindOfClass:[NSDictionary class]] ) {
 			// this group has only 1 single touch
 			touchDict = item;
+			curSeqNum = [[touchDict objectForKey:DLTouchSequenceNumKey] integerValue];
 			locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
 			if ( locStr ) {
 				// this is a touch point
@@ -535,10 +540,9 @@
 			}
 		} else {
 			NSArray * theTouches = item;
+			curSeqNum = 0;
 			if ( [self currentTouch:item hasDifferentCompositionWithPreviousTouch:[groupArray objectAtIndex:prevIdx]] ) {
-				// draw touch point first
-				NSInteger curSeqNum = 0;
-				
+				// draw touch point first				
 				for (touchDict  in theTouches) {
 					if ( curSeqNum == 0 ) {
 						curSeqNum = [[touchDict objectForKey:DLTouchSequenceNumKey] integerValue];
@@ -556,6 +560,7 @@
 				for (TouchLayer * theLayer in onscreenDotLayerBuffer) {
 					if ( theLayer.currentSequence != curSeqNum ) {
 						// dump this layer
+						NSLog(@"should hide the layer: %ld %ld", theLayer.currentSequence, curSeqNum);
 					}
 				}
 				for (RectLayer * theLayer in rectLayerBuffer) {

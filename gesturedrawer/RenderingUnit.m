@@ -41,7 +41,6 @@ NSString * DLTouchPrivateFrameKey = @"privateFrame";
 	TouchLayer * shapeLayer = nil;
 	if ( [onscreenDotLayerBuffer count] == 1 ) {
 		shapeLayer = [onscreenDotLayerBuffer objectAtIndex:0];
-		shapeLayer.currentSequence = seqNum;
 	} else {
 		double d = 0.0;
 		double minDist = 9999.0;
@@ -52,11 +51,11 @@ NSString * DLTouchPrivateFrameKey = @"privateFrame";
 				if ( d < minDist ) {
 					shapeLayer = theLayer;
 					minDist = d;
-					theLayer.currentSequence = seqNum;
 				}
 			}
 		}
 	}
+	shapeLayer.currentSequence = seqNum;
 	return shapeLayer;
 }
 
