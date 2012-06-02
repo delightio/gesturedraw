@@ -547,11 +547,14 @@
 				double minDist = 9999.0;
 				NSDictionary * targetTouch = nil;
 				for (touchDict in remainingTouches) {
-					NSPoint prevLoc = NSPointFromString([touchDict objectForKey:DLTouchPreviousLocationKey]);
-					d = [theLayer discrepancyWithPreviousLocation:prevLoc];
-					if ( d < minDist ) {
-						minDist = d;
-						targetTouch = touchDict;
+					locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
+					if ( locStr ) {
+						NSPoint prevLoc = NSPointFromString(locStr);
+						d = [theLayer discrepancyWithPreviousLocation:prevLoc];
+						if ( d < minDist ) {
+							minDist = d;
+							targetTouch = touchDict;
+						}
 					}
 				}
 				// we have the touch with shortest distance from the layer
