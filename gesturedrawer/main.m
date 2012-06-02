@@ -8,7 +8,8 @@
 
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
-#import "RenderingUnit.h"
+#import "RenderingUnitV01.h"
+#import "RenderingUnitV02.h"
 
 int main(int argc, char * argv[])
 {
@@ -46,7 +47,25 @@ int main(int argc, char * argv[])
 			return 0;
 		}
 		// start the processing pipeline
-		RenderingUnit * rndUnit = [[RenderingUnit alloc] initWithVideoAtPath:vdoFilePath touchesPListPath:plistFilePath destinationPath:dstFilePath];
+		// read the touches
+		NSData * propData = [NSData dataWithContentsOfFile:plistFilePath];
+		NSPropertyListFormat listFmt = 0;
+		NSError * err = nil;
+		NSDictionary * touchInfo = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
+		NSString * fmtVersion = [touchInfo objectForKey:@"formatVersion"];
+		if ( fmtVersion == nil ) {
+			NSLog(@"no version number in plist file");
+			[NSApp terminate:nil];
+		}
+		RenderingUnit * rndUnit = nil;
+		if ( [fmtVersion isEqualToString:@"0.1"] ) {
+			rndUnit = [[RenderingUnitV01 alloc] initWithVideoAtPath:vdoFilePath destinationPath:dstFilePath touchesPropertyList:touchInfo];
+		} else if ( [fmtVersion isEqualToString:@"0.2"] ) {
+			rndUnit = [[RenderingUnitV02 alloc] initWithVideoAtPath:vdoFilePath destinationPath:dstFilePath touchesPropertyList:touchInfo];
+		} else {
+			NSLog(@"wrong plist file version, expect version 0.1 or 0.2");
+			[NSApp terminate:nil];
+		}
 		NSConditionLock * cndLock = [[NSConditionLock alloc] initWithCondition:0];
 		[rndUnit exportVideoWithCompletionHandler:^{
 			[cndLock lock];

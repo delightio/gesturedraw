@@ -106,7 +106,8 @@
 
 - (void)exportVideoWithCompletionHandler:(void (^)(void))handler {
 	AVAsset * srcVdoAsset = [AVAsset assetWithURL:[NSURL fileURLWithPath:sourceFilePath]];
-    AVAssetTrack * originalTrack = [[srcVdoAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
+ 	videoDuration = CMTimeGetSeconds(srcVdoAsset.duration);
+   AVAssetTrack * originalTrack = [[srcVdoAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
 	videoDuration = CMTimeGetSeconds(srcVdoAsset.duration);
 	// create composition from source
 	AVMutableComposition * srcComposition = [AVMutableComposition composition];
