@@ -245,7 +245,24 @@
 }
 
 - (void)hideTouchLayer:(TouchLayer *)shapeLayer {
-	
+	NSTimeInterval curTimeItval = shapeLayer.previousTime;
+	NSNumber * fadeTimeNum;
+	// fade the shape layer
+	fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval + DL_NORMAL_OPACITY_ANIMATION_DURATION) / videoDuration];
+	// fade out effect
+	// effect start time
+	[shapeLayer.opacityKeyTimes addObject:[NSNumber numberWithDouble:curTimeItval / videoDuration]];
+	// effect end time
+	[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
+	[shapeLayer.opacityValues addObject:(NSNumber *)kCFBooleanTrue];		// start value
+	[shapeLayer.opacityValues addObject:(NSNumber *)kCFBooleanFalse];		// end value
+	// make sure the dot is not moving till animation is done
+	[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
+	[shapeLayer.pathValues addObject:[NSValue valueWithPoint:shapeLayer.previousLocation]];
+	[unassignedDotLayerBuffer addObject:shapeLayer];
+	[onscreenDotLayerBuffer removeObject:shapeLayer];
+	shapeLayer.needFadeIn = YES;
+
 }
 
 - (void)configureRectLayerTouch:(NSDictionary *)touchDict {
@@ -368,6 +385,7 @@
 	[shapeLayer.pathValues addObject:curPointVal];
 	shapeLayer.previousLocation = curPoint;
 	shapeLayer.previousTime = curTimeItval;
+	shapeLayer.currentSequence = [[touchDict objectForKey:DLTouchSequenceNumKey] integerValue];
 	return shapeLayer;
 }
 
@@ -514,24 +532,7 @@
 					// different composition, we need to fade out the odd one
 					// Dig up the previous dot layer and fade it out
 					if ( [onscreenDotLayerBuffer count] == 1 ) {
-						TouchLayer * shapeLayer = [onscreenDotLayerBuffer objectAtIndex:0];
-						NSTimeInterval curTimeItval = shapeLayer.previousTime;
-						NSNumber * fadeTimeNum;
-						// fade the shape layer
-						fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval + DL_NORMAL_OPACITY_ANIMATION_DURATION) / videoDuration];
-						// fade out effect
-						// effect start time
-						[shapeLayer.opacityKeyTimes addObject:[NSNumber numberWithDouble:curTimeItval / videoDuration]];
-						// effect end time
-						[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
-						[shapeLayer.opacityValues addObject:(NSNumber *)kCFBooleanTrue];		// start value
-						[shapeLayer.opacityValues addObject:(NSNumber *)kCFBooleanFalse];		// end value
-						// make sure the dot is not moving till animation is done
-						[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
-						[shapeLayer.pathValues addObject:[NSValue valueWithPoint:shapeLayer.previousLocation]];
-						[unassignedDotLayerBuffer addObject:shapeLayer];
-						[onscreenDotLayerBuffer removeObjectAtIndex:0];
-						shapeLayer.needFadeIn = YES;
+						[self hideTouchLayer:[onscreenDotLayerBuffer objectAtIndex:0]];
 					}
 					[self showRectLayerForTouch:touchDict];
 				} else {
@@ -560,7 +561,7 @@
 				for (TouchLayer * theLayer in onscreenDotLayerBuffer) {
 					if ( theLayer.currentSequence != curSeqNum ) {
 						// dump this layer
-						NSLog(@"should hide the layer: %ld %ld", theLayer.currentSequence, curSeqNum);
+//						[self hideTouchLayer:theLayer];
 					}
 				}
 				for (RectLayer * theLayer in rectLayerBuffer) {
