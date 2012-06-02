@@ -27,8 +27,6 @@ extern NSString * DLTouchTapCountKey;
 extern NSString * DLTouchPrivateFrameKey;
 
 @interface RenderingUnit : NSObject {
-	__strong NSMutableArray * onscreenDotLayerBuffer;
-	__strong NSMutableArray * unassignedDotLayerBuffer;
 	__strong AVAssetExportSession * session;
 	__strong NSString * sourceFilePath;
 	__strong NSString * destinationFilePath;
@@ -43,7 +41,7 @@ extern NSString * DLTouchPrivateFrameKey;
 
 - (id)initWithVideoAtPath:(NSString *)vdoPath destinationPath:(NSString *)dstPath touchesPropertyList:(NSDictionary *)tchPlist;
 - (void)exportVideoWithCompletionHandler:(void (^)(void))handler;
-- (TouchLayer *)layerForTouch:(NSDictionary *)aTouchDict parentLayer:(CALayer *)pLayer;
+- (TouchLayer *)layerForTouch:(NSDictionary *)aTouchDict;
 
 - (void)setupGestureAnimationsForLayer:(CALayer *)prnLayer;
 

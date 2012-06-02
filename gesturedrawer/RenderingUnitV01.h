@@ -8,6 +8,9 @@
 
 #import "RenderingUnit.h"
 
-@interface RenderingUnitV01 : RenderingUnit
+@interface RenderingUnitV01 : RenderingUnit {
+	__strong NSMutableArray * onscreenDotLayerBuffer;
+	__strong NSMutableArray * unassignedDotLayerBuffer;
+}
 
 @end

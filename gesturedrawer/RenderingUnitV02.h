@@ -10,6 +10,7 @@
 
 @interface RenderingUnitV02 : RenderingUnit {
 	__strong NSMutableArray * rectLayerBuffer;
+	__strong NSMutableArray * dotLayerBuffer;
 }
 
 @end

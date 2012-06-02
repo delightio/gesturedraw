@@ -20,6 +20,7 @@
 - (id)initWithVideoAtPath:(NSString *)vdoPath destinationPath:(NSString *)dstPath touchesPropertyList:(NSDictionary *)tchPlist {
 	self = [super initWithVideoAtPath:vdoPath destinationPath:dstPath touchesPropertyList:tchPlist];
 	rectLayerBuffer = [[NSMutableArray alloc] initWithCapacity:2];
+	dotLayerBuffer = [[NSMutableArray alloc] initWithCapacity:2];
 	return self;
 }
 
@@ -259,8 +260,6 @@
 	// make sure the dot is not moving till animation is done
 	[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
 	[shapeLayer.pathValues addObject:[NSValue valueWithPoint:shapeLayer.previousLocation]];
-	[unassignedDotLayerBuffer addObject:shapeLayer];
-	[onscreenDotLayerBuffer removeObject:shapeLayer];
 	shapeLayer.needFadeIn = YES;
 
 }
@@ -331,8 +330,7 @@
 	shapeLayer.currentSequence = [[touchDict objectForKey:DLTouchSequenceNumKey] integerValue];
 }
 
-- (CALayer *)configureDistinctTouchPoint:(NSDictionary *)touchDict {
-	TouchLayer * shapeLayer = [self layerForTouch:touchDict parentLayer:self.parentLayer];
+- (CALayer *)configureDistinctTouchPoint:(NSDictionary *)touchDict forLayer:(TouchLayer *)shapeLayer {
 	if ( shapeLayer == nil ) return nil;
 	//		privateTouch = [[touchDict objectForKey:DLTouchPrivateKey] boolValue];
 	// setup the layer's position at time
@@ -389,40 +387,6 @@
 	return shapeLayer;
 }
 
-//- (BOOL)currentTouch:(NSDictionary *)curItem hasDifferentCompositionWithPreviousTouch:(id)prevItem {
-//	if ( [curItem objectForKey:DLTouchPrivateFrameKey] ) {
-//		// curItem is a rect
-//		if ( [prevItem isKindOfClass:[NSDictionary class]] ) {
-//			// check if it's a point or a rect
-//			NSDictionary * prevDict = prevItem;
-//			if ( [prevDict objectForKey:DLTouchPrivateFrameKey] == nil ) {
-//				NSInteger curPhase = [[curItem objectForKey:DLTouchPhaseKey] integerValue];
-//				NSInteger prevPhase = [[prevDict objectForKey:DLTouchPhaseKey] integerValue];
-//				if ( curPhase == prevPhase || (( curPhase == UITouchPhaseMoved || curPhase == UITouchPhaseStationary ) && ( prevPhase == UITouchPhaseStationary || prevPhase == UITouchPhaseMoved )) ) {
-//					// the previous touch is a point. We are at the boundary case.
-//					return YES;
-//				}
-//			}
-//		} else {
-//			// previous event contain multiple touches
-//		}
-//	} else {
-//		if ( [prevItem isKindOfClass:[NSDictionary class]] ) {
-//			NSDictionary * prevDict = prevItem;
-//			if ( [prevDict objectForKey:DLTouchPrivateFrameKey] ) {
-//				NSInteger curPhase = [[curItem objectForKey:DLTouchPhaseKey] integerValue];
-//				NSInteger prevPhase = [[prevDict objectForKey:DLTouchPhaseKey] integerValue];
-//				if ( curPhase == prevPhase || (( curPhase == UITouchPhaseMoved || curPhase == UITouchPhaseStationary ) && ( prevPhase == UITouchPhaseStationary || prevPhase == UITouchPhaseMoved )) ) {
-//					return YES;
-//				}
-//			}
-//		} else {
-//			// previous event contains multiple touches
-//		}
-//	}
-//	return NO;
-//}
-
 - (BOOL)currentTouch:(id)curItem hasDifferentCompositionWithPreviousTouch:(id)prevItem {
 	// we want to check whether the previous set of touches belongs to the same event as the current set of touches.
 	NSDictionary * prevDict;
@@ -475,6 +439,35 @@
 	return NO;
 }
 
+- (TouchLayer *)layerWithPreviousLocation:(NSPoint)prevLoc forSequence:(NSInteger)seqNum {
+	TouchLayer * shapeLayer = nil;
+	double d = 0.0;
+	double minDist = 9999.0;
+	for (TouchLayer * theLayer in dotLayerBuffer) {
+		if ( theLayer.currentSequence != seqNum ) {
+			// try to do the comparison only when the sequence number of the layer is not the same as the requested one. If they are the same, the layer has been compared and matached another points already.
+			d = [theLayer discrepancyWithPreviousLocation:prevLoc];
+			if ( d < minDist ) {
+				shapeLayer = theLayer;
+				minDist = d;
+			}
+		}
+	}
+	shapeLayer.currentSequence = seqNum;
+	return shapeLayer;
+}
+
+- (TouchLayer *)layerForTouch:(NSDictionary *)aTouchDict {
+	TouchLayer * shapeLayer = [self layerWithPreviousLocation:NSPointFromString([aTouchDict objectForKey:DLTouchPreviousLocationKey]) forSequence:[[aTouchDict objectForKey:DLTouchSequenceNumKey] integerValue]];
+	if ( shapeLayer == nil ) {
+		// create a new layer
+		shapeLayer = [TouchLayer layer];
+		[self.parentLayer addSublayer:shapeLayer];
+		[dotLayerBuffer addObject:shapeLayer];
+	}
+	return shapeLayer;
+}
+
 - (void)setupGestureAnimationsForLayer:(CALayer *)prnLayer {
 	self.parentLayer = prnLayer;
 	// group touches from the same event in an array
@@ -489,7 +482,7 @@
 				if ( numTouchesInSeq > 1 ) {
 					[groupArray addObject:[touches subarrayWithRange:NSMakeRange(idx - numTouchesInSeq, numTouchesInSeq)]];
 				} else {
-					[groupArray addObject:[touches objectAtIndex:idx - 1]];
+					[groupArray addObject:[NSArray arrayWithObject:[touches objectAtIndex:idx - 1]]];
 				}
 			}
 			numTouchesInSeq = 1;
@@ -504,92 +497,84 @@
 		if ( numTouchesInSeq > 1 ) {
 			[groupArray addObject:[touches subarrayWithRange:NSMakeRange(idx - numTouchesInSeq, numTouchesInSeq)]];
 		} else {
-			[groupArray addObject:[touches objectAtIndex:idx - 1]];
+			[groupArray addObject:[NSArray arrayWithObject:[touches objectAtIndex:idx - 1]]];
 		}
 	}
 	NSDictionary * touchDict = nil;
 	NSString * locStr = nil;
 	idx = 0;
 	NSInteger prevIdx = 0;
+	TouchLayer * shapeLayer = nil;
 	for (id item in groupArray) {
-		if ( [item isKindOfClass:[NSDictionary class]] ) {
-			// this group has only 1 single touch
-			touchDict = item;
-			curSeqNum = [[touchDict objectForKey:DLTouchSequenceNumKey] integerValue];
-			locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
-			if ( locStr ) {
-				// this is a touch point
-				// check if we are moving out from a private view
-				if ( [self currentTouch:touchDict hasDifferentCompositionWithPreviousTouch:[groupArray objectAtIndex:prevIdx]] ) {
-					// hide the rect
-					[self hideRectLayerForTouch:[groupArray objectAtIndex:prevIdx]];
+		NSArray * theTouches = item;
+		curSeqNum = 0;
+		if ( [self currentTouch:item hasDifferentCompositionWithPreviousTouch:[groupArray objectAtIndex:prevIdx]] ) {
+			// draw touch point first				
+			for (touchDict  in theTouches) {
+				if ( curSeqNum == 0 ) {
+					curSeqNum = [[touchDict objectForKey:DLTouchSequenceNumKey] integerValue];
 				}
-				[self configureDistinctTouchPoint:item];
-			} else {
-				// this is a rect
-				// check if this event has the same composition as previous event
-				if ( [self currentTouch:touchDict hasDifferentCompositionWithPreviousTouch:[groupArray objectAtIndex:prevIdx]] ) {
-					// different composition, we need to fade out the odd one
-					// Dig up the previous dot layer and fade it out
-					if ( [onscreenDotLayerBuffer count] == 1 ) {
-						[self hideTouchLayer:[onscreenDotLayerBuffer objectAtIndex:0]];
-					}
-					[self showRectLayerForTouch:touchDict];
+				// perform checking with point first
+				locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
+				if ( locStr ) {
+					// this is a touch point, perform the normal logic
+					shapeLayer = [self layerForTouch:touchDict];
+					[self configureDistinctTouchPoint:touchDict forLayer:shapeLayer];
 				} else {
+					// this is a rect
 					[self configureRectLayerTouch:touchDict];
 				}
 			}
+			for (TouchLayer * theLayer in dotLayerBuffer) {
+				if ( theLayer.currentSequence != curSeqNum ) {
+					// dump this layer
+					if ( !theLayer.needFadeIn ) [self hideTouchLayer:theLayer];
+					theLayer.currentSequence = curSeqNum;
+				}
+			}
+			for (RectLayer * theLayer in rectLayerBuffer) {
+				if ( theLayer.currentSequence != curSeqNum ) {
+					if ( !theLayer.needFadeIn ) [self hideRectLayer:theLayer];
+					theLayer.currentSequence = curSeqNum;
+				}
+			}
 		} else {
-			NSArray * theTouches = item;
-			curSeqNum = 0;
-			if ( [self currentTouch:item hasDifferentCompositionWithPreviousTouch:[groupArray objectAtIndex:prevIdx]] ) {
-				// draw touch point first				
-				for (touchDict  in theTouches) {
-					if ( curSeqNum == 0 ) {
-						curSeqNum = [[touchDict objectForKey:DLTouchSequenceNumKey] integerValue];
-					}
-					// perform checking with point first
-					locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
-					if ( locStr ) {
-						// this is a touch point, perform the normal logic
-						[self configureDistinctTouchPoint:touchDict];
-					} else {
-						// this is a rect
-						[self configureRectLayerTouch:touchDict];
+			// match layer with touches first
+			double d = 0.0;
+			NSMutableArray * remainingTouches = [NSMutableArray arrayWithArray:theTouches];
+			// match points with layer (perform thorough check)
+			for (TouchLayer * theLayer in dotLayerBuffer) {
+				double minDist = 9999.0;
+				NSDictionary * targetTouch = nil;
+				for (touchDict in remainingTouches) {
+					NSPoint prevLoc = NSPointFromString([touchDict objectForKey:DLTouchPreviousLocationKey]);
+					d = [theLayer discrepancyWithPreviousLocation:prevLoc];
+					if ( d < minDist ) {
+						minDist = d;
+						targetTouch = touchDict;
 					}
 				}
-				for (TouchLayer * theLayer in onscreenDotLayerBuffer) {
-					if ( theLayer.currentSequence != curSeqNum ) {
-						// dump this layer
-//						[self hideTouchLayer:theLayer];
-					}
+				// we have the touch with shortest distance from the layer
+				if ( targetTouch ) {
+					[remainingTouches removeObject:targetTouch];
+					[self configureDistinctTouchPoint:targetTouch forLayer:theLayer];
 				}
-				for (RectLayer * theLayer in rectLayerBuffer) {
-					if ( theLayer.currentSequence != curSeqNum ) {
-						if ( !theLayer.needFadeIn ) [self hideRectLayer:theLayer];
-						theLayer.currentSequence = curSeqNum;
-					}
-				}
-			} else {
-				// normal drawing
-				for (touchDict in theTouches) {
-					locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
-					if ( locStr ) {
-						[self configureDistinctTouchPoint:touchDict];
-					} else {
-						[self configureRectLayerTouch:touchDict];
-					}
+			}
+			// normal drawing
+			for (touchDict in remainingTouches) {
+				locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
+				if ( locStr ) {
+					shapeLayer = [self layerForTouch:touchDict];
+					[self configureDistinctTouchPoint:touchDict forLayer:shapeLayer];
+				} else {
+					[self configureRectLayerTouch:touchDict];
 				}
 			}
 		}
 		prevIdx = idx++;
 	}
 	// just in case if there's any bug or reason that the onscreenLayerBuffer still contains some layers
-	if ( [onscreenDotLayerBuffer count] ) {
-		[unassignedDotLayerBuffer addObjectsFromArray:onscreenDotLayerBuffer];
-		[onscreenDotLayerBuffer removeAllObjects];
-	}
-	for (TouchLayer * theLayer in unassignedDotLayerBuffer) {
+	for (TouchLayer * theLayer in dotLayerBuffer) {
 		CAKeyframeAnimation * dotFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
 		CAKeyframeAnimation * fadeFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
 		dotFrameAnimation.values = theLayer.pathValues;
