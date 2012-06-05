@@ -15,6 +15,10 @@
 #define DL_TOUCH_POINT_TYPE		1000
 #define DL_TOUCH_RECT_TYPE		1001
 
+NSString * DLDeviceOrientationKey = @"deviceOrientation";
+NSString * DLInterfaceOrientationKey = @"interfaceOrientation";
+NSString * DLOrientationTimeKey = @"time";
+
 @implementation RenderingUnitV02
 
 - (id)initWithVideoAtPath:(NSString *)vdoPath destinationPath:(NSString *)dstPath touchesPropertyList:(NSDictionary *)tchPlist {
@@ -605,6 +609,74 @@
 		fadeFrameAnimation.removedOnCompletion = NO;
 		[theLayer addAnimation:fadeFrameAnimation forKey:nil];
 	}
+}
+
+- (void)checkMajorOrientationForTrack:(NSArray *)track {
+	NSUInteger c = [track count];
+	NSDictionary * oriDict = nil;
+	if ( c == 0 ) {
+		// just use default portrait
+		majorOrientation = UIInterfaceOrientationPortrait;
+	} else if ( c == 1 ) {
+		oriDict = [track lastObject];
+		majorOrientation = [[oriDict objectForKey:DLInterfaceOrientationKey] integerValue];
+	} else {
+		NSDictionary * prevOriDict;
+		prevOriDict = [track objectAtIndex:0];
+		NSMutableDictionary * timeDurationDict = [NSMutableDictionary dictionaryWithCapacity:4];
+		NSNumber * oriNum, * accuTimeNum;
+		NSTimeInterval timeVal;
+		for (NSInteger i = 1; i < c; i++) {
+			oriDict = [track objectAtIndex:i];
+			oriNum = [oriDict objectForKey:DLInterfaceOrientationKey];
+			// time interval since last change
+			timeVal = [[oriDict objectForKey:DLOrientationTimeKey] doubleValue] - [[prevOriDict objectForKey:DLOrientationTimeKey] doubleValue];
+			// accumulate time duration inbetween change
+			accuTimeNum = [timeDurationDict objectForKey:oriNum];
+			if ( accuTimeNum ) {
+				accuTimeNum = [NSNumber numberWithDouble:[accuTimeNum doubleValue] + timeVal];
+			} else {
+				accuTimeNum = [NSNumber numberWithDouble:timeVal];
+			}
+			[timeDurationDict setObject:accuTimeNum forKey:oriNum];
+		}
+		// look for the major orientation
+		timeVal = -9999.0;
+		NSTimeInterval curVal;
+		NSNumber * curMajorOriNum;
+		for (oriNum in timeDurationDict) {
+			curVal = [[timeDurationDict objectForKey:oriNum] doubleValue];
+			if ( curVal > timeVal ) {
+				// this is the current max
+				curMajorOriNum = oriNum;
+			}
+		}
+		// this is the major orientation
+		majorOrientation = [oriNum integerValue];
+	}
+}
+
+- (void)setOrientationTransformForLayer:(CALayer *)aLayer {
+	CATransform3D origTransform = aLayer.transform;
+	CGFloat r = 0.0;
+	switch (majorOrientation) {
+		case UIInterfaceOrientationLandscapeLeft:
+			r = -M_PI_2;
+			break;
+			
+		case UIInterfaceOrientationLandscapeRight:
+			r = M_PI_2;
+			break;
+			
+		case UIInterfaceOrientationPortraitUpsideDown:
+			r = M_PI;
+			break;
+			
+		default:
+			break;
+	}
+	aLayer.transform = CATransform3DRotate(origTransform, r, 0.0, 0.0, 1.0);
+//	aLayer.transform = CATransform3DConcat(origTransform, CATransform3DMakeAffineTransform(CGAffineTransformRotate(CGAffineTransformIdentity, r)));
 }
 
 @end

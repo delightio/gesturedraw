@@ -18,8 +18,9 @@ int main(int argc, char * argv[])
 		NSString * vdoFilePath = nil;
 		NSString * plistFilePath = nil;
 		NSString * dstFilePath = nil;
+		NSString * oriFilePath = nil;
 		int c = 0;
-	    while ( (c = getopt(argc, argv, "p:f:d:")) != -1 ) {
+	    while ( (c = getopt(argc, argv, "p:f:d:o")) != -1 ) {
 			switch (c) {
 				case 'f':
 					if ( optarg ) {
@@ -36,6 +37,11 @@ int main(int argc, char * argv[])
 						dstFilePath = [NSString stringWithCString:optarg encoding:NSUTF8StringEncoding];
 					}
 					break;
+				case 'o':
+					if ( optarg ) {
+						oriFilePath = [NSString stringWithCString:optarg encoding:NSUTF8StringEncoding];
+					}
+					break;
 					
 				default:
 					break;
@@ -43,7 +49,7 @@ int main(int argc, char * argv[])
 		}
 		if ( vdoFilePath == nil || plistFilePath == nil || dstFilePath == nil ) {
 			// error running the command
-			NSLog(@"usage: gesturedrawer -f movie_file -p plist_file -d destination_file");
+			NSLog(@"usage: gesturedrawer -f movie_file -p plist_file -d destination_file -o orientation_file");
 			return 0;
 		}
 		// start the processing pipeline

@@ -26,6 +26,7 @@
 @property (nonatomic, strong) NSString * videoPath;
 @property (nonatomic, strong) NSString * touchesPath;
 @property (nonatomic, strong) NSString * exportPath;
+@property (nonatomic, strong) NSString * orientationPath;
 
 - (IBAction)playPlainVideo:(id)sender;
 - (IBAction)exportVideo:(id)sender;

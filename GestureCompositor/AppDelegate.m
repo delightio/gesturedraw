@@ -31,6 +31,7 @@
 @synthesize videoPath = _videoPath;
 @synthesize touchesPath = _touchesPath;
 @synthesize exportPath = _exportPath;
+@synthesize orientationPath = _orientationPath;
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
@@ -41,7 +42,7 @@
 	char ** argv = *_NSGetArgv();
 	int c = 0;
 	
-	while ( (c = getopt(argc, argv, "NSDocumentRevisionsDebugMod:ep:f:")) != -1 ) {
+	while ( (c = getopt(argc, argv, "NSDcumentRevisinsDebugMo:d:ep:f:")) != -1 ) {
 		switch (c) {
 			case 'f':
 				if ( optarg ) {
@@ -60,6 +61,12 @@
 				}
 				break;
 				
+			case 'o':
+				if ( optarg && _orientationPath == nil ) {
+					self.orientationPath = [NSString stringWithCString:optarg encoding:NSUTF8StringEncoding];
+				}
+				break;
+				
 			default:
 				break;
 		}
@@ -73,9 +80,10 @@
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleDidPlayNotification:) name:AVPlayerItemDidPlayToEndTimeNotification object:_playerItem];
 	
 	CGSize vdoSize = _sourceVideoAsset.naturalSize;
-	AVPlayerLayer * theLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
-	theLayer.frame = CGRectMake(0.0, 0.0, vdoSize.width, vdoSize.height);
-	[_playbackView setLayer:theLayer];
+	AVPlayerLayer * playerLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
+	playerLayer.bounds = CGRectMake(0.0, 0.0, vdoSize.width, vdoSize.height);
+	playerLayer.position = CGPointMake(_playbackView.bounds.size.width / 2.0, _playbackView.bounds.size.height / 2.0);
+	[_playbackView setLayer:playerLayer];
 	// create synchronized layer for video playback
 	syncLayer = [AVSynchronizedLayer synchronizedLayerWithPlayerItem:_playerItem];
 	syncLayer.anchorPoint = CGPointZero;
@@ -94,26 +102,43 @@
 	RenderingUnit * rndUnit = nil;
 	if ( [fmtVersion isEqualToString:@"0.1"] ) {
 		rndUnit = [[RenderingUnitV01 alloc] initWithVideoAtPath:_videoPath destinationPath:_exportPath touchesPropertyList:_touchInfo];
+		// setup rendering unit
+		NSRect theRect = rndUnit.touchBounds;
+		rndUnit.videoDuration = CMTimeGetSeconds(_sourceVideoAsset.duration);
+		
+		syncLayer.sublayerTransform = CATransform3DScale(CATransform3DIdentity, vdoSize.width / theRect.size.width, vdoSize.height / theRect.size.height, 1.0);
+		[syncLayer setGeometryFlipped:YES];
+		
+		[_playbackView.layer addSublayer:syncLayer];
+		
+		[rndUnit setupGestureAnimationsForLayer:syncLayer];
 	} else if ( [fmtVersion isEqualToString:@"0.2"] ) {
-		rndUnit = [[RenderingUnitV02 alloc] initWithVideoAtPath:_videoPath destinationPath:_exportPath touchesPropertyList:_touchInfo];
+		RenderingUnitV02 * v2RndUnit = [[RenderingUnitV02 alloc] initWithVideoAtPath:_videoPath destinationPath:_exportPath touchesPropertyList:_touchInfo];
+		// load the orientation file
+		propData = nil;
+		if ( _orientationPath ) {
+			propData = [NSData dataWithContentsOfFile:_orientationPath];
+		}
+		if ( propData ) {
+			NSDictionary * dict = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
+			[v2RndUnit checkMajorOrientationForTrack:[dict objectForKey:@"orientationChanges"]];
+		}
+		// setup rendering unit
+		NSRect theRect = v2RndUnit.touchBounds;
+		v2RndUnit.videoDuration = CMTimeGetSeconds(_sourceVideoAsset.duration);
+		
+		syncLayer.sublayerTransform = CATransform3DScale(CATransform3DIdentity, vdoSize.width / theRect.size.width, vdoSize.height / theRect.size.height, 1.0);
+		[syncLayer setGeometryFlipped:YES];
+		
+		[_playbackView.layer addSublayer:syncLayer];
+		
+		[v2RndUnit setOrientationTransformForLayer:playerLayer];
+		
+		[v2RndUnit setupGestureAnimationsForLayer:syncLayer];
 	} else {
 		NSLog(@"wrong plist file version, expect version 0.1 or 0.2");
 		[NSApp terminate:nil];
 	}
-	// setup rendering unit
-	NSRect theRect = rndUnit.touchBounds;
-	rndUnit.videoDuration = CMTimeGetSeconds(_sourceVideoAsset.duration);
-	
-	syncLayer.sublayerTransform = CATransform3DScale(CATransform3DIdentity, vdoSize.width / theRect.size.width, vdoSize.height / theRect.size.height, 1.0);
-	[syncLayer setGeometryFlipped:YES];
-	
-//	CGColorRef redColor = CGColorCreateGenericRGB(1.0, 0.0, 0.0, 0.25);
-//	syncLayer.backgroundColor = redColor;
-//	CGColorRelease(redColor);
-	
-	[_playbackView.layer addSublayer:syncLayer];
-	
-	[rndUnit setupGestureAnimationsForLayer:syncLayer];
 }
 
 - (void)handleDidPlayNotification:(NSNotification *)aNotification {
