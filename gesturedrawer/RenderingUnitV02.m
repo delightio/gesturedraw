@@ -44,15 +44,17 @@ NSString * DLOrientationTimeKey = @"time";
 	AVMutableVideoCompositionInstruction *passThroughInstruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
 	passThroughInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, [srcComposition duration]);
 	
+	//	[self setOrientationTransformForLayer:parentLayer];
+	// set transform instruction
 	AVAssetTrack *videoTrack = [[srcComposition tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
 	
-	AVMutableVideoCompositionLayerInstruction *passThroughLayer = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:videoTrack];
+	AVMutableVideoCompositionLayerInstruction *passThroughLayerInstruction = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:videoTrack];
     if (CGAffineTransformEqualToTransform(originalTrack.preferredTransform, CGAffineTransformMakeScale(1, -1))) {
         // Original video was flipped vertically. Flip the new video vertically as well.
         // Can't just pass the original transform along since the instruction requires translation to be set.
-        [passThroughLayer setTransform:CGAffineTransformMake(1, 0, 0, -1, 0, vdoSize.height) atTime:kCMTimeZero];
+        [passThroughLayerInstruction setTransform:CGAffineTransformMake(1, 0, 0, -1, 0, vdoSize.height) atTime:kCMTimeZero];
     }
-	passThroughInstruction.layerInstructions = [NSArray arrayWithObject:passThroughLayer];
+	passThroughInstruction.layerInstructions = [NSArray arrayWithObject:passThroughLayerInstruction];
 	videoComposition.instructions = [NSArray arrayWithObject:passThroughInstruction];
 	
 	// prepare animation
@@ -74,7 +76,6 @@ NSString * DLOrientationTimeKey = @"time";
 	[self setupGestureAnimationsForLayer:gestureLayer];
 	//	[_playbackView.layer addSublayer:parentLayer];
 	videoComposition.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayer:videoLayer inLayer:parentLayer];
-	//	videoComposition.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithAdditionalLayer:parentLayer asTrackID:23];
 	videoComposition.frameDuration = CMTimeMake(1, 30);
 	videoComposition.renderSize = vdoSize;
 	
@@ -677,6 +678,27 @@ NSString * DLOrientationTimeKey = @"time";
 	}
 	aLayer.transform = CATransform3DRotate(origTransform, r, 0.0, 0.0, 1.0);
 //	aLayer.transform = CATransform3DConcat(origTransform, CATransform3DMakeAffineTransform(CGAffineTransformRotate(CGAffineTransformIdentity, r)));
+}
+
+- (CGFloat)majorOrientationRotationAngle {
+	CGFloat r = 0.0;
+	switch (majorOrientation) {
+		case UIInterfaceOrientationLandscapeLeft:
+			r = -M_PI_2;
+			break;
+			
+		case UIInterfaceOrientationLandscapeRight:
+			r = M_PI_2;
+			break;
+			
+		case UIInterfaceOrientationPortraitUpsideDown:
+			r = M_PI;
+			break;
+			
+		default:
+			break;
+	}
+	return r;
 }
 
 @end

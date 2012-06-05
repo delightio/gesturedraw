@@ -67,7 +67,18 @@ int main(int argc, char * argv[])
 		if ( [fmtVersion isEqualToString:@"0.1"] ) {
 			rndUnit = [[RenderingUnitV01 alloc] initWithVideoAtPath:vdoFilePath destinationPath:dstFilePath touchesPropertyList:touchInfo];
 		} else if ( [fmtVersion isEqualToString:@"0.2"] ) {
-			rndUnit = [[RenderingUnitV02 alloc] initWithVideoAtPath:vdoFilePath destinationPath:dstFilePath touchesPropertyList:touchInfo];
+			RenderingUnitV02 * v2RndUnit = [[RenderingUnitV02 alloc] initWithVideoAtPath:vdoFilePath destinationPath:dstFilePath touchesPropertyList:touchInfo];
+			NSData * propData = nil;
+			if ( oriFilePath ) {
+				propData = [NSData dataWithContentsOfFile:oriFilePath];
+			}
+			if ( propData ) {
+				NSPropertyListFormat listFmt;
+				NSError * err;
+				NSDictionary * dict = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
+				[v2RndUnit checkMajorOrientationForTrack:[dict objectForKey:@"orientationChanges"]];
+			}
+			rndUnit = v2RndUnit;
 		} else {
 			NSLog(@"wrong plist file version, expect version 0.1 or 0.2");
 			[NSApp terminate:nil];

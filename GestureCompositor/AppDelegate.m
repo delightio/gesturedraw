@@ -162,7 +162,18 @@
 	if ( [fmtVersion isEqualToString:@"0.1"] ) {
 		rndUnit = [[RenderingUnitV01 alloc] initWithVideoAtPath:_videoPath destinationPath:_exportPath touchesPropertyList:_touchInfo];
 	} else if ( [fmtVersion isEqualToString:@"0.2"] ) {
-		rndUnit = [[RenderingUnitV02 alloc] initWithVideoAtPath:_videoPath destinationPath:_exportPath touchesPropertyList:_touchInfo];
+		RenderingUnitV02 * v2RndUnit = [[RenderingUnitV02 alloc] initWithVideoAtPath:_videoPath destinationPath:_exportPath touchesPropertyList:_touchInfo];
+		NSData * propData = nil;
+		if ( _orientationPath ) {
+			propData = [NSData dataWithContentsOfFile:_orientationPath];
+		}
+		if ( propData ) {
+			NSPropertyListFormat listFmt;
+			NSError * err;
+			NSDictionary * dict = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
+			[v2RndUnit checkMajorOrientationForTrack:[dict objectForKey:@"orientationChanges"]];
+		}
+		rndUnit = v2RndUnit;
 	}
 	[rndUnit exportVideoWithCompletionHandler:^{
 		NSLog(@"export done");
