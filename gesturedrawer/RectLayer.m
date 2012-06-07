@@ -11,8 +11,11 @@
 @implementation RectLayer
 @synthesize opacityKeyTimes = _opacityKeyTimes;
 @synthesize opacityValues = _opacityValues;
+@synthesize pathKeyTimes = _pathKeyTimes;
+@synthesize pathValues = _pathValues;
 @synthesize startTime = _startTime;
 @synthesize previousTime = _previousTime;
+@synthesize previousFrame = _previousFrame;
 @synthesize currentSequence = _currentSequence;
 @synthesize touchCount = _touchCount;
 @synthesize needFadeIn = _needFadeIn;
@@ -26,7 +29,11 @@
 		
 	_opacityKeyTimes = [[NSMutableArray alloc] initWithCapacity:10];
 	_opacityValues = [[NSMutableArray alloc] initWithCapacity:10];
+	_pathKeyTimes = [[NSMutableArray alloc] initWithCapacity:10];
+	_pathValues = [[NSMutableArray alloc] initWithCapacity:10];
+	
 	_needFadeIn = YES;
+	self.anchorPoint = CGPointZero;
 	[self setShouldRasterize:YES];
 	
 	CGColorRelease(blueColor);

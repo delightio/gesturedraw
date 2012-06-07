@@ -19,6 +19,16 @@ NSString * DLDeviceOrientationKey = @"deviceOrientation";
 NSString * DLInterfaceOrientationKey = @"interfaceOrientation";
 NSString * DLOrientationTimeKey = @"time";
 
+NS_INLINE CGPoint MidPointForCGRect(CGRect cgrect) {
+	return CGPointMake((cgrect.origin.x + cgrect.size.width) / 2.0, (cgrect.origin.y + cgrect.size.height) / 2.0);
+}
+
+NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
+	double xDist = pointA.x - pointB.x;
+	double yDist = pointA.y - pointB.y;
+	return sqrt((xDist * xDist) + (yDist * yDist));
+}
+
 @implementation RenderingUnitV02
 
 - (id)initWithVideoAtPath:(NSString *)vdoPath destinationPath:(NSString *)dstPath touchesPropertyList:(NSDictionary *)tchPlist {
@@ -247,6 +257,8 @@ NSString * DLOrientationTimeKey = @"time";
 	[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
 	[shapeLayer.opacityValues addObject:oneNum];		// start value
 	[shapeLayer.opacityValues addObject:zeroNum];		// end value
+	[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
+	[shapeLayer.pathValues addObject:[NSValue valueWithPoint:NSPointFromCGPoint(shapeLayer.previousFrame.origin)]];
 	shapeLayer.previousTime = curTimeItval + DL_NORMAL_OPACITY_ANIMATION_DURATION;
 	shapeLayer.needFadeIn = YES;
 }
@@ -273,11 +285,21 @@ NSString * DLOrientationTimeKey = @"time";
 - (void)configureRectLayerTouch:(NSDictionary *)touchDict {
 	RectLayer * shapeLayer = nil;
 	CGRect tFrame = NSRectToCGRect(NSRectFromString([touchDict objectForKey:DLTouchPrivateFrameKey]));
+	CGPoint tMidPoint = MidPointForCGRect(tFrame);
+	CGPoint layerMidPoint;
+	double minDist = 999999.9;
+	double d;
+	
 	// get the rect layer of the right size
 	if ( [rectLayerBuffer count] ) {
-		for (shapeLayer in rectLayerBuffer) {
-			if ( CGRectEqualToRect(shapeLayer.frame, tFrame) ) {
-				break;
+		for (RectLayer * theLayer in rectLayerBuffer) {
+			if ( CGSizeEqualToSize(tFrame.size, theLayer.previousFrame.size) ) {
+				layerMidPoint = MidPointForCGRect(shapeLayer.previousFrame);
+				d = DistanceBetween(tMidPoint, layerMidPoint);
+				if ( d < minDist ) {
+					minDist = d;
+					shapeLayer = theLayer;
+				}
 			}
 		}
 	}
@@ -294,6 +316,7 @@ NSString * DLOrientationTimeKey = @"time";
 	NSNumber * zeroNum = (NSNumber *)kCFBooleanFalse;
 	NSNumber * oneNum = (NSNumber *)kCFBooleanTrue;
 	NSTimeInterval curTimeItval = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
+	NSValue * curFrameVal = [NSValue valueWithPoint:NSPointFromCGPoint(tFrame.origin)];
 	NSNumber * touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
 	// set layer animation
 	if ( ttype == UITouchPhaseBegan || shapeLayer.needFadeIn ) {
@@ -309,6 +332,12 @@ NSString * DLOrientationTimeKey = @"time";
 			[shapeLayer.opacityKeyTimes addObject:touchTime];
 			[shapeLayer.opacityValues addObject:zeroNum];		// start value
 			[shapeLayer.opacityValues addObject:oneNum];		// end value
+			// make sure the rect is shown when it starts to fade in
+			[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
+			[shapeLayer.pathValues addObject:curFrameVal];
+			// move the rect
+//			[shapeLayer.pathKeyTimes addObject:touchTime];
+//			[shapeLayer.pathValues addObject:curFrameVal];
 			// make sure the dot is "in" the location when animation starts
 			shapeLayer.needFadeIn = NO;
 		}
@@ -329,9 +358,20 @@ NSString * DLOrientationTimeKey = @"time";
 			[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
 			[shapeLayer.opacityValues addObject:oneNum];		// start value
 			[shapeLayer.opacityValues addObject:zeroNum];		// end value
+			// move the rect
+//			[shapeLayer.pathKeyTimes addObject:touchTime];
+//			[shapeLayer.pathValues addObject:curFrameVal];
+			// keep rect stationary for fade out effect
+			[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
+			[shapeLayer.pathValues addObject:curFrameVal];
 			shapeLayer.needFadeIn = YES;
 		}
+	} else {
+		// move the rect
+		[shapeLayer.pathKeyTimes addObject:touchTime];
+		[shapeLayer.pathValues addObject:curFrameVal];
 	}
+	shapeLayer.previousFrame = tFrame;
 	shapeLayer.previousTime = curTimeItval;
 	shapeLayer.currentSequence = [[touchDict objectForKey:DLTouchSequenceNumKey] integerValue];
 }
@@ -365,6 +405,10 @@ NSString * DLOrientationTimeKey = @"time";
 		// make sure the dot is "in" the location when animation starts
 		[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
 		[shapeLayer.pathValues addObject:curPointVal];
+		// set paths
+		[shapeLayer.pathKeyTimes addObject:touchTime];
+		// position of layer at time
+		[shapeLayer.pathValues addObject:curPointVal];
 	} else if ( ttype == UITouchPhaseCancelled || ttype == UITouchPhaseEnded ) {
 		if ( curTimeItval - shapeLayer.startTime < DL_MINIMUM_DURATION ) {
 			// we need to show the dot for longer time so that it's visually visible
@@ -379,14 +423,19 @@ NSString * DLOrientationTimeKey = @"time";
 		[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
 		[shapeLayer.opacityValues addObject:oneNum];		// start value
 		[shapeLayer.opacityValues addObject:zeroNum];		// end value
+		// set paths
+		[shapeLayer.pathKeyTimes addObject:touchTime];
+		// position of layer at time
+		[shapeLayer.pathValues addObject:curPointVal];
 		// make sure the dot is not moving till animation is done
 		[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
 		[shapeLayer.pathValues addObject:curPointVal];
+	} else {
+		// set paths
+		[shapeLayer.pathKeyTimes addObject:touchTime];
+		// position of layer at time
+		[shapeLayer.pathValues addObject:curPointVal];
 	}
-	// set paths
-	[shapeLayer.pathKeyTimes addObject:touchTime];
-	// position of layer at time
-	[shapeLayer.pathValues addObject:curPointVal];
 	shapeLayer.previousLocation = curPoint;
 	shapeLayer.previousTime = curTimeItval;
 	shapeLayer.currentSequence = [[touchDict objectForKey:DLTouchSequenceNumKey] integerValue];
@@ -608,7 +657,16 @@ NSString * DLOrientationTimeKey = @"time";
 		fadeFrameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
 		fadeFrameAnimation.duration = videoDuration;
 		fadeFrameAnimation.removedOnCompletion = NO;
-		[theLayer addAnimation:fadeFrameAnimation forKey:nil];
+		
+		CAKeyframeAnimation * moveFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
+		moveFrameAnimation.values = theLayer.pathValues;
+		moveFrameAnimation.keyTimes = theLayer.pathKeyTimes;
+		moveFrameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
+		moveFrameAnimation.duration = videoDuration;
+		moveFrameAnimation.removedOnCompletion = NO;
+		
+		[theLayer addAnimation:fadeFrameAnimation forKey:@"rectOpacityAnimation"];
+		[theLayer addAnimation:moveFrameAnimation forKey:@"rectPositionAnimation"];
 	}
 }
 
