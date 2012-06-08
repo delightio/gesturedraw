@@ -90,6 +90,7 @@ int main(int argc, char * argv[])
 		}];
 		[cndLock lockWhenCondition:100];
 		[cndLock unlock];
+		return rndUnit.encountersExportError ? -1 : 0;
 	}
     return 0;
 }

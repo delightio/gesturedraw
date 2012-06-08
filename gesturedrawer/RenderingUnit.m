@@ -21,6 +21,7 @@ NSString * DLTouchPrivateFrameKey = @"privateFrame";
 @synthesize parentLayer;
 @synthesize touchBounds;
 @synthesize videoDuration;
+@synthesize encountersExportError;
 
 - (id)initWithVideoAtPath:(NSString *)vdoPath destinationPath:(NSString *)dstPath touchesPropertyList:(NSDictionary *)tchPlist {
 	self = [super init];

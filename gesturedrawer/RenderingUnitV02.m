@@ -166,6 +166,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 			} else {
 				NSLog(@"Video export failed: %@", finalError);
 			}
+			self.encountersExportError = !finalSuccess;
 			handler();
 		});
 		dispatch_release(dispatchGroup);
