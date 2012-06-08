@@ -29,7 +29,7 @@ static NSString * DLDeviceOrientationKey = @"deviceOrientation";
 static NSString * DLInterfaceOrientationKey = @"interfaceOrientation";
 static NSString * DLOrientationTimeKey = @"time";
 
-UIInterfaceOrientation checkMajorOrientationForTrack(NSArray * track, NSInteger vdoDuration) {
+UIInterfaceOrientation checkMajorOrientationForTrack(NSArray * track, double vdoDuration) {
 	NSUInteger c = [track count];
 	NSDictionary * oriDict = nil;
 	UIInterfaceOrientation majorOrientation;
@@ -64,7 +64,7 @@ UIInterfaceOrientation checkMajorOrientationForTrack(NSArray * track, NSInteger 
 		// calculate the duration of the last instance
 		oriNum = [prevOriDict objectForKey:DLInterfaceOrientationKey];
 		// time interval since last change
-		timeVal = (double)vdoDuration - [[prevOriDict objectForKey:DLOrientationTimeKey] doubleValue];
+		timeVal = vdoDuration - [[prevOriDict objectForKey:DLOrientationTimeKey] doubleValue];
 		// accumulate time duration inbetween change
 		accuTimeNum = [timeDurationDict objectForKey:oriNum];
 		if ( accuTimeNum ) {
@@ -83,10 +83,11 @@ UIInterfaceOrientation checkMajorOrientationForTrack(NSArray * track, NSInteger 
 			if ( curVal > timeVal ) {
 				// this is the current max
 				curMajorOriNum = oriNum;
+				timeVal = curVal;
 			}
 		}
 		// this is the major orientation
-		majorOrientation = [oriNum integerValue];
+		majorOrientation = [curMajorOriNum integerValue];
 	}
 	return majorOrientation;
 }
@@ -96,7 +97,7 @@ int main(int argc, char * argv[])
 	int c = 0;
 	@autoreleasepool {
 		NSString * oriFilePath = nil;
-		NSInteger vdoDur = 0;
+		double vdoDur = 0;
 	    while ( (c = getopt(argc, argv, "f:d:")) != -1 ) {
 			switch (c) {
 				case 'f':
@@ -106,7 +107,7 @@ int main(int argc, char * argv[])
 					break;
 				case 'd':
 					if ( optarg ) {
-						vdoDur = [[NSString stringWithCString:optarg encoding:NSUTF8StringEncoding] integerValue];
+						vdoDur = [[NSString stringWithCString:optarg encoding:NSUTF8StringEncoding] doubleValue];
 					}
 					break;
 				default:
