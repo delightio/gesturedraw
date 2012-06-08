@@ -29,6 +29,7 @@ typedef enum {
 	__strong NSMutableArray * rectLayerBuffer;
 	__strong NSMutableArray * dotLayerBuffer;
 	UIInterfaceOrientation majorOrientation;
+	BOOL exportFinished;
 }
 
 - (void)checkMajorOrientationForTrack:(NSArray *)track;

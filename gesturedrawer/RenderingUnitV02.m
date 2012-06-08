@@ -105,24 +105,73 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	if ( !success ) {
 		NSLog(@"error reading asset: %@", assetReader.error);
 	}
-	success = [assetWriter startWriting];
-	[assetWriter startSessionAtSourceTime:kCMTimeZero];
-	[videoInput requestMediaDataWhenReadyOnQueue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0) usingBlock:^{
-		while (videoInput.readyForMoreMediaData) {
-			if ( assetReader.status == AVAssetReaderStatusUnknown ) continue;
-			CMSampleBufferRef sampleBuffer = [videoCompositionOutput copyNextSampleBuffer];
-			if ( sampleBuffer ) {
-				[videoInput appendSampleBuffer:sampleBuffer];
-				CFRelease(sampleBuffer);
-			} else {
-				[videoInput markAsFinished];
-				BOOL writeSuccess = [assetWriter finishWriting];
-				NSLog(@"video exported - %@ - %@", destinationFilePath, writeSuccess ? @"no error" : assetWriter.error);
-				handler();
-				break;
-			}
+	if ( success ) {
+		success = [assetWriter startWriting];
+		if ( !success ) {
+			NSLog(@"error starting asset writing: %@", assetWriter.error);
 		}
-	}];
+	}
+	if ( success ) {
+		// create dispatch group
+		dispatch_queue_t inputSerialQueue = dispatch_queue_create("Export Serial Queue", NULL);
+		dispatch_group_t dispatchGroup = dispatch_group_create();
+		
+		dispatch_group_enter(dispatchGroup);
+		[assetWriter startSessionAtSourceTime:kCMTimeZero];
+		[videoInput requestMediaDataWhenReadyOnQueue:inputSerialQueue usingBlock:^{
+			if ( exportFinished ) return;
+			BOOL completedOrFailed = NO;
+			while (videoInput.readyForMoreMediaData && !completedOrFailed) {
+				if ( assetReader.status != AVAssetReaderStatusReading ) continue;
+				CMSampleBufferRef sampleBuffer = [videoCompositionOutput copyNextSampleBuffer];
+				if ( sampleBuffer ) {
+					BOOL success = [videoInput appendSampleBuffer:sampleBuffer];
+					CFRelease(sampleBuffer);
+					sampleBuffer = NULL;
+					completedOrFailed = !success;
+				} else {
+					completedOrFailed = YES;
+				}
+			}
+			if ( completedOrFailed ) {
+				BOOL oldFinished = exportFinished;
+				exportFinished = YES;
+				
+				if (oldFinished == NO)
+				{
+					[videoInput markAsFinished];  // let the asset writer know that we will not be appending any more samples to this input
+//					BOOL writeSuccess = [assetWriter finishWriting];
+//					NSLog(@"video exported - %@ - %@", destinationFilePath, writeSuccess ? @"no error" : assetWriter.error);
+					dispatch_group_leave(dispatchGroup);
+				}
+			}
+		}];
+		dispatch_group_notify(dispatchGroup, inputSerialQueue, ^{
+			BOOL finalSuccess = YES;
+			NSError * finalError;
+			if ([assetReader status] == AVAssetReaderStatusFailed)
+			{
+				finalSuccess = NO;
+				finalError = [assetReader error];
+			}
+			
+			if (finalSuccess)
+			{
+				finalSuccess = [assetWriter finishWriting];
+				if (!finalSuccess)
+					finalError = [assetWriter error];
+			}
+			if ( finalSuccess ) {
+				NSLog(@"video exported successfully: %@", destinationFilePath);
+			} else {
+				NSLog(@"Video export failed: %@", finalError);
+			}
+			handler();
+		});
+		dispatch_release(dispatchGroup);
+	} else {
+		handler();
+	}
 }
 
 - (void)setLayer:(TouchLayer *)shapeLayer fadeIn:(BOOL)aflag atTime:(NSTimeInterval)curTimeItval location:(NSPoint)curLoc {
