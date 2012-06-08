@@ -89,6 +89,17 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	videoComposition.frameDuration = CMTimeMake(1, 30);
 	videoComposition.renderSize = vdoSize;
 	
+	session = [[AVAssetExportSession alloc] initWithAsset:srcComposition presetName:AVAssetExportPreset640x480];
+	session.shouldOptimizeForNetworkUse = YES;
+	session.videoComposition = videoComposition;
+	session.outputURL = [NSURL fileURLWithPath:destinationFilePath];
+	session.outputFileType = AVFileTypeQuickTimeMovie;
+	
+	[session exportAsynchronouslyWithCompletionHandler:^{
+		NSLog(@"video exported - %@ %@", destinationFilePath, session.status == AVAssetExportSessionStatusFailed ? session.error : @"no error");
+		handler();
+	}];
+/*
 	NSError * error = nil;
 	AVAssetWriter * assetWriter = [AVAssetWriter assetWriterWithURL:[NSURL fileURLWithPath:destinationFilePath] fileType:AVFileTypeMPEG4 error:&error];
 	AVAssetWriterInput * videoInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:[NSDictionary dictionaryWithObjectsAndKeys:AVVideoCodecH264, AVVideoCodecKey, [NSNumber numberWithFloat:vdoSize.width], AVVideoWidthKey, [NSNumber numberWithFloat:vdoSize.height], AVVideoHeightKey, nil]];
@@ -172,6 +183,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	} else {
 		handler();
 	}
+ */
 }
 
 - (void)setLayer:(TouchLayer *)shapeLayer fadeIn:(BOOL)aflag atTime:(NSTimeInterval)curTimeItval location:(NSPoint)curLoc {
