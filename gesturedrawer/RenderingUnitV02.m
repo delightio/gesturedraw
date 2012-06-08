@@ -95,7 +95,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	AVAssetReader * assetReader = [AVAssetReader assetReaderWithAsset:srcComposition error:&error];
 	AVAssetReaderVideoCompositionOutput * videoCompositionOutput = [AVAssetReaderVideoCompositionOutput assetReaderVideoCompositionOutputWithVideoTracks:[NSArray arrayWithObject:videoTrack] videoSettings:nil];
 	videoCompositionOutput.videoComposition = videoComposition;
-	NSLog(@"can add output: %d", [assetReader canAddOutput:videoCompositionOutput]);
+	NSLog(@"Asset reader status: %d %@", [assetReader canAddOutput:videoCompositionOutput], [destinationFilePath lastPathComponent]);
 	[assetReader addOutput:videoCompositionOutput];
 	
 	[assetWriter addInput:videoInput];
@@ -573,11 +573,6 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	for (id item in groupArray) {
 		NSArray * theTouches = item;
 		curSeqNum = 0;
-		// ==== debug ====
-		touchDict = [theTouches lastObject];
-		NSInteger seqLog = [[touchDict objectForKey:DLTouchSequenceNumKey] integerValue];
-		NSLog(@"sequence %ld", seqLog);
-		// ===============
 		if ( [self currentTouch:item hasDifferentCompositionWithPreviousTouch:[groupArray objectAtIndex:prevIdx]] ) {
 			// draw touch point first				
 			for (touchDict  in theTouches) {
