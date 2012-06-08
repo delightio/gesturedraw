@@ -147,6 +147,17 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	return sqrt((xDist * xDist) + (yDist * yDist));
 }
 
+- (NSInteger)numberOfInFlightDotLayer {
+	NSInteger c = 0;
+	for (TouchLayer * theLayer in dotLayerBuffer) {
+		if ( theLayer.needFadeIn == NO ) {
+			// in-flight layer
+			c++;
+		}
+	}
+	return c;
+}
+
 - (void)showRectLayerForTouch:(NSDictionary *)touchDict {
 	RectLayer * shapeLayer = nil;
 	CGRect tFrame = NSRectToCGRect(NSRectFromString([touchDict objectForKey:DLTouchPrivateFrameKey]));
@@ -279,7 +290,6 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
 	[shapeLayer.pathValues addObject:[NSValue valueWithPoint:shapeLayer.previousLocation]];
 	shapeLayer.needFadeIn = YES;
-
 }
 
 - (void)configureRectLayerTouch:(NSDictionary *)touchDict {
@@ -445,29 +455,29 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 - (BOOL)currentTouch:(id)curItem hasDifferentCompositionWithPreviousTouch:(id)prevItem {
 	// we want to check whether the previous set of touches belongs to the same event as the current set of touches.
 	NSDictionary * prevDict;
-	if ( [curItem isKindOfClass:[NSDictionary class]] && [prevItem isKindOfClass:[NSDictionary class]] ) {
-		prevDict = prevItem;
-		if ( [curItem objectForKey:DLTouchPrivateFrameKey] ) {
-			// curItem is a rect
-			if ( [prevDict objectForKey:DLTouchPrivateFrameKey] == nil ) {
-				NSInteger curPhase = [[curItem objectForKey:DLTouchPhaseKey] integerValue];
-				NSInteger prevPhase = [[prevDict objectForKey:DLTouchPhaseKey] integerValue];
-				if ( curPhase == prevPhase || (( curPhase == UITouchPhaseMoved || curPhase == UITouchPhaseStationary ) && ( prevPhase == UITouchPhaseBegan || prevPhase == UITouchPhaseStationary || prevPhase == UITouchPhaseMoved )) ) {
-					// the previous touch is a point. We are at the boundary case.
-					return YES;
-				}
-			}
-		} else {
-			// curItem is point
-			if ( [prevDict objectForKey:DLTouchPrivateFrameKey] ) {
-				NSInteger curPhase = [[curItem objectForKey:DLTouchPhaseKey] integerValue];
-				NSInteger prevPhase = [[prevDict objectForKey:DLTouchPhaseKey] integerValue];
-				if ( curPhase == prevPhase || (( curPhase == UITouchPhaseMoved || curPhase == UITouchPhaseStationary ) && ( prevPhase == UITouchPhaseBegan || prevPhase == UITouchPhaseStationary || prevPhase == UITouchPhaseMoved )) ) {
-					return YES;
-				}
-			}
-		}
-	} else if ( [curItem isKindOfClass:[NSArray class]] && [prevItem isKindOfClass:[NSArray class]] ) {
+//	if ( [curItem isKindOfClass:[NSDictionary class]] && [prevItem isKindOfClass:[NSDictionary class]] ) {
+//		prevDict = prevItem;
+//		if ( [curItem objectForKey:DLTouchPrivateFrameKey] ) {
+//			// curItem is a rect
+//			if ( [prevDict objectForKey:DLTouchPrivateFrameKey] == nil ) {
+//				NSInteger curPhase = [[curItem objectForKey:DLTouchPhaseKey] integerValue];
+//				NSInteger prevPhase = [[prevDict objectForKey:DLTouchPhaseKey] integerValue];
+//				if ( curPhase == prevPhase || (( curPhase == UITouchPhaseMoved || curPhase == UITouchPhaseStationary ) && ( prevPhase == UITouchPhaseBegan || prevPhase == UITouchPhaseStationary || prevPhase == UITouchPhaseMoved )) ) {
+//					// the previous touch is a point. We are at the boundary case.
+//					return YES;
+//				}
+//			}
+//		} else {
+//			// curItem is point
+//			if ( [prevDict objectForKey:DLTouchPrivateFrameKey] ) {
+//				NSInteger curPhase = [[curItem objectForKey:DLTouchPhaseKey] integerValue];
+//				NSInteger prevPhase = [[prevDict objectForKey:DLTouchPhaseKey] integerValue];
+//				if ( curPhase == prevPhase || (( curPhase == UITouchPhaseMoved || curPhase == UITouchPhaseStationary ) && ( prevPhase == UITouchPhaseBegan || prevPhase == UITouchPhaseStationary || prevPhase == UITouchPhaseMoved )) ) {
+//					return YES;
+//				}
+//			}
+//		}
+//	} else if ( [curItem isKindOfClass:[NSArray class]] && [prevItem isKindOfClass:[NSArray class]] ) {
 		if ( [curItem count] == [prevItem count] ) {
 			// we need to do some checking
 			NSInteger thePhase;
@@ -490,7 +500,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 			}
 			return needMoreChecking;
 		}
-	}
+//	}
 	return NO;
 }
 
@@ -563,6 +573,11 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	for (id item in groupArray) {
 		NSArray * theTouches = item;
 		curSeqNum = 0;
+		// ==== debug ====
+		touchDict = [theTouches lastObject];
+		NSInteger seqLog = [[touchDict objectForKey:DLTouchSequenceNumKey] integerValue];
+		NSLog(@"sequence %ld", seqLog);
+		// ===============
 		if ( [self currentTouch:item hasDifferentCompositionWithPreviousTouch:[groupArray objectAtIndex:prevIdx]] ) {
 			// draw touch point first				
 			for (touchDict  in theTouches) {
@@ -596,36 +611,99 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 		} else {
 			// match layer with touches first
 			double d = 0.0;
-			NSMutableArray * remainingTouches = [NSMutableArray arrayWithArray:theTouches];
-			// match points with layer (perform thorough check)
-			for (TouchLayer * theLayer in dotLayerBuffer) {
-				double minDist = 9999.0;
-				NSDictionary * targetTouch = nil;
-				for (touchDict in remainingTouches) {
-					locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
-					if ( locStr ) {
-						NSPoint prevLoc = NSPointFromString(locStr);
-						d = [theLayer discrepancyWithPreviousLocation:prevLoc];
-						if ( d < minDist ) {
-							minDist = d;
-							targetTouch = touchDict;
+			NSUInteger idx = 0;
+			if ( [self numberOfInFlightDotLayer] > [theTouches count] ) {
+				NSMutableArray * remainingLayers = [NSMutableArray arrayWithArray:dotLayerBuffer];
+				NSMutableIndexSet * tchHandledIdxSet = [NSMutableIndexSet indexSet];
+				// we need to remove extra layers. Iterate on touch point first
+				for (touchDict in theTouches) {
+					double minDist = 9999.0;
+					NSDictionary * targetTouch = nil;
+					TouchLayer * targetLayer = nil;
+					for (TouchLayer * theLayer in dotLayerBuffer) {
+						locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
+						if ( locStr ) {
+							NSPoint prevLoc = NSPointFromString(locStr);
+							d = [theLayer discrepancyWithPreviousLocation:prevLoc];
+							if ( d < minDist ) {
+								minDist = d;
+								targetTouch = touchDict;
+								targetLayer = theLayer;
+							}
+						}
+					}
+					// we have the touch with shortest distance from the layer
+					if ( targetTouch ) {
+						[tchHandledIdxSet addIndex:idx];
+						[remainingLayers removeObject:targetLayer];
+						[self configureDistinctTouchPoint:targetTouch forLayer:targetLayer];
+					}
+					idx++;
+				}
+				// hide extra layers
+				for (shapeLayer in remainingLayers) {
+					[self hideTouchLayer:shapeLayer];
+				}
+				// draw touches
+				if ( [tchHandledIdxSet count] < [theTouches count] ) {
+					// draw the remaining touches
+					idx =  0;
+					for (touchDict in theTouches) {
+						if ( [tchHandledIdxSet containsIndex:idx++] ) continue;
+						locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
+						if ( locStr ) {
+							TouchLayer * shapeLayer = [self layerForTouch:touchDict];
+							[self configureDistinctTouchPoint:touchDict forLayer:shapeLayer];
+						} else {
+							[self configureRectLayerTouch:touchDict];
 						}
 					}
 				}
-				// we have the touch with shortest distance from the layer
-				if ( targetTouch ) {
-					[remainingTouches removeObject:targetTouch];
-					[self configureDistinctTouchPoint:targetTouch forLayer:theLayer];
+			} else {
+				NSMutableArray * remainingTouches = [NSMutableArray arrayWithArray:theTouches];
+				NSMutableIndexSet * layerHandledIdxSet = [NSMutableIndexSet indexSet];
+				// match points with layer (perform thorough check)
+				for (TouchLayer * theLayer in dotLayerBuffer) {
+					double minDist = 9999.0;
+					NSDictionary * targetTouch = nil;
+					TouchLayer * targetLayer = nil;
+					for (touchDict in remainingTouches) {
+						locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
+						if ( locStr ) {
+							NSPoint prevLoc = NSPointFromString(locStr);
+							d = [theLayer discrepancyWithPreviousLocation:prevLoc];
+							if ( d < minDist ) {
+								minDist = d;
+								targetTouch = touchDict;
+								targetLayer = theLayer;
+							}
+						}
+					}
+					// we have the touch with shortest distance from the layer
+					if ( targetTouch ) {
+						[layerHandledIdxSet addIndex:idx];
+						[remainingTouches removeObject:targetTouch];
+						[self configureDistinctTouchPoint:targetTouch forLayer:targetLayer];
+					}
+					idx++;
 				}
-			}
-			// normal drawing
-			for (touchDict in remainingTouches) {
-				locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
-				if ( locStr ) {
-					shapeLayer = [self layerForTouch:touchDict];
-					[self configureDistinctTouchPoint:touchDict forLayer:shapeLayer];
-				} else {
-					[self configureRectLayerTouch:touchDict];
+				// hide extra layers
+				if ( [layerHandledIdxSet count] < [dotLayerBuffer count] ) {
+					idx = 0;
+					for (shapeLayer in dotLayerBuffer) {
+						if ( [layerHandledIdxSet containsIndex:idx++] ) continue;
+						if ( !shapeLayer.needFadeIn ) [self hideTouchLayer:shapeLayer];
+					}
+				}
+				// normal drawing
+				for (touchDict in remainingTouches) {
+					locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
+					if ( locStr ) {
+						shapeLayer = [self layerForTouch:touchDict];
+						[self configureDistinctTouchPoint:touchDict forLayer:shapeLayer];
+					} else {
+						[self configureRectLayerTouch:touchDict];
+					}
 				}
 			}
 		}
