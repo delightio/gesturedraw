@@ -18,6 +18,9 @@
 		A916A9F31566C9F500362B04 /* ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A916A9F11566C9F500362B04 /* ViewController.xib */; };
 		A916A9F91566CA0300362B04 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A916A9F81566CA0300362B04 /* AVFoundation.framework */; };
 		A916A9FB1566CA0A00362B04 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A916A9FA1566CA0A00362B04 /* CoreMedia.framework */; };
+		A92D6A781582B7B20078866E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9F1E833155C34A3001C0C37 /* Foundation.framework */; };
+		A92D6A7B1582B7B20078866E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A92D6A7A1582B7B20078866E /* main.m */; };
+		A92D6A7F1582B7B20078866E /* majororientation.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = A92D6A7E1582B7B20078866E /* majororientation.1 */; };
 		A93E65411575959C00AA1F20 /* RenderingUnitV02.m in Sources */ = {isa = PBXBuildFile; fileRef = A93E65401575959C00AA1F20 /* RenderingUnitV02.m */; };
 		A93E65421575959C00AA1F20 /* RenderingUnitV02.m in Sources */ = {isa = PBXBuildFile; fileRef = A93E65401575959C00AA1F20 /* RenderingUnitV02.m */; };
 		A93E65431575959C00AA1F20 /* RenderingUnitV02.m in Sources */ = {isa = PBXBuildFile; fileRef = A93E65401575959C00AA1F20 /* RenderingUnitV02.m */; };
@@ -55,6 +58,16 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		A92D6A741582B7B20078866E /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+				A92D6A7F1582B7B20078866E /* majororientation.1 in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 		A9F1E82D155C34A3001C0C37 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -83,6 +96,11 @@
 		A916A9F21566C9F500362B04 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/ViewController.xib; sourceTree = "<group>"; };
 		A916A9F81566CA0300362B04 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.1.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		A916A9FA1566CA0A00362B04 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.1.sdk/System/Library/Frameworks/CoreMedia.framework; sourceTree = DEVELOPER_DIR; };
+		A92D6A671582B7510078866E /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		A92D6A761582B7B20078866E /* majororientation */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = majororientation; sourceTree = BUILT_PRODUCTS_DIR; };
+		A92D6A7A1582B7B20078866E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		A92D6A7D1582B7B20078866E /* majororientation-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "majororientation-Prefix.pch"; sourceTree = "<group>"; };
+		A92D6A7E1582B7B20078866E /* majororientation.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = majororientation.1; sourceTree = "<group>"; };
 		A93E653F1575959C00AA1F20 /* RenderingUnitV02.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderingUnitV02.h; sourceTree = "<group>"; };
 		A93E65401575959C00AA1F20 /* RenderingUnitV02.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderingUnitV02.m; sourceTree = "<group>"; };
 		A93E6545157595BD00AA1F20 /* RenderingUnitV01.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderingUnitV01.h; sourceTree = "<group>"; };
@@ -133,6 +151,14 @@
 				A916A9DE1566C9F500362B04 /* UIKit.framework in Frameworks */,
 				A916A9DF1566C9F500362B04 /* Foundation.framework in Frameworks */,
 				A916A9E11566C9F500362B04 /* CoreGraphics.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A92D6A731582B7B20078866E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A92D6A781582B7B20078866E /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -188,6 +214,24 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		A92D6A791582B7B20078866E /* majororientation */ = {
+			isa = PBXGroup;
+			children = (
+				A92D6A7A1582B7B20078866E /* main.m */,
+				A92D6A7E1582B7B20078866E /* majororientation.1 */,
+				A92D6A7C1582B7B20078866E /* Supporting Files */,
+			);
+			path = majororientation;
+			sourceTree = "<group>";
+		};
+		A92D6A7C1582B7B20078866E /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				A92D6A7D1582B7B20078866E /* majororientation-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
 		A9F1E824155C34A3001C0C37 = {
 			isa = PBXGroup;
 			children = (
@@ -195,6 +239,7 @@
 				A9F1E835155C34A3001C0C37 /* gesturedrawer */,
 				A9F1E84F155C4BBD001C0C37 /* GestureCompositor */,
 				A916A9E21566C9F500362B04 /* GestureCompositorMobile */,
+				A92D6A791582B7B20078866E /* majororientation */,
 				A9F1E832155C34A3001C0C37 /* Frameworks */,
 				A9F1E830155C34A3001C0C37 /* Products */,
 			);
@@ -206,6 +251,7 @@
 				A9F1E82F155C34A3001C0C37 /* gesturedrawer */,
 				A9F1E847155C4BBD001C0C37 /* GestureCompositor.app */,
 				A916A9DB1566C9F500362B04 /* GestureCompositorMobile.app */,
+				A92D6A761582B7B20078866E /* majororientation */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -224,6 +270,7 @@
 				A9F1E849155C4BBD001C0C37 /* Cocoa.framework */,
 				A916A9DD1566C9F500362B04 /* UIKit.framework */,
 				A916A9E01566C9F500362B04 /* CoreGraphics.framework */,
+				A92D6A671582B7510078866E /* CoreFoundation.framework */,
 				A9F1E84B155C4BBD001C0C37 /* Other Frameworks */,
 			);
 			name = Frameworks;
@@ -311,6 +358,23 @@
 			productReference = A916A9DB1566C9F500362B04 /* GestureCompositorMobile.app */;
 			productType = "com.apple.product-type.application";
 		};
+		A92D6A751582B7B20078866E /* majororientation */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A92D6A801582B7B20078866E /* Build configuration list for PBXNativeTarget "majororientation" */;
+			buildPhases = (
+				A92D6A721582B7B20078866E /* Sources */,
+				A92D6A731582B7B20078866E /* Frameworks */,
+				A92D6A741582B7B20078866E /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = majororientation;
+			productName = majororientation;
+			productReference = A92D6A761582B7B20078866E /* majororientation */;
+			productType = "com.apple.product-type.tool";
+		};
 		A9F1E82E155C34A3001C0C37 /* gesturedrawer */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A9F1E83E155C34A3001C0C37 /* Build configuration list for PBXNativeTarget "gesturedrawer" */;
@@ -369,6 +433,7 @@
 				A9F1E82E155C34A3001C0C37 /* gesturedrawer */,
 				A9F1E846155C4BBD001C0C37 /* GestureCompositor */,
 				A916A9DA1566C9F500362B04 /* GestureCompositorMobile */,
+				A92D6A751582B7B20078866E /* majororientation */,
 			);
 		};
 /* End PBXProject section */
@@ -410,6 +475,14 @@
 				A93E65431575959C00AA1F20 /* RenderingUnitV02.m in Sources */,
 				A93E6549157595BD00AA1F20 /* RenderingUnitV01.m in Sources */,
 				A96D6AF3157802EB00AEC72C /* RectLayer.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A92D6A721582B7B20078866E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A92D6A7B1582B7B20078866E /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -528,6 +601,24 @@
 			};
 			name = Release;
 		};
+		A92D6A811582B7B20078866E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "majororientation/majororientation-Prefix.pch";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		A92D6A821582B7B20078866E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "majororientation/majororientation-Prefix.pch";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		A9F1E83C155C34A3001C0C37 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -626,6 +717,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		A92D6A801582B7B20078866E /* Build configuration list for PBXNativeTarget "majororientation" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A92D6A811582B7B20078866E /* Debug */,
+				A92D6A821582B7B20078866E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 		A9F1E829155C34A3001C0C37 /* Build configuration list for PBXProject "gesturedrawer" */ = {
 			isa = XCConfigurationList;
