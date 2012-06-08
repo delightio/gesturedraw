@@ -116,7 +116,7 @@ int main(int argc, char * argv[])
 		}
 		if ( oriFilePath == nil  ) {
 			// error running the command
-			NSLog(@"usage: gesturedrawer -f orientation_plist_file\nIt returns 0, 90, 180, 270 as angle to rotate");
+			NSLog(@"usage: gesturedrawer -f orientation_plist_file -d duration_in_decimal_format\nIt returns 0, 90, 180, 270 as angle to rotate");
 			return -1;
 		}
 		// start the processing pipeline
