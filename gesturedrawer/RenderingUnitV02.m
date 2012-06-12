@@ -38,8 +38,15 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	return self;
 }
 
-- (void)exportVideoWithCompletionHandler:(void (^)(void))handler {
+- (void)exportVideoWithCompletionHandler:(void (^)(void))handler errorHandler:(void (^)(void))errHdlr {
 	AVAsset * srcVdoAsset = [AVAsset assetWithURL:[NSURL fileURLWithPath:sourceFilePath]];
+	if ( !srcVdoAsset.readable ) {
+		// throw an exception? quit the app?
+		self.encountersExportError = YES;
+		NSLog(@"Error: file not readable: %@", sourceFilePath);
+		errHdlr();
+		return;
+	}
 	videoDuration = CMTimeGetSeconds(srcVdoAsset.duration);
     AVAssetTrack * originalTrack = [[srcVdoAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
 	videoDuration = CMTimeGetSeconds(srcVdoAsset.duration);

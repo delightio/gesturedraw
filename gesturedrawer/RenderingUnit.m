@@ -36,6 +36,10 @@ NSString * DLTouchPrivateFrameKey = @"privateFrame";
 - (void)exportVideoWithCompletionHandler:(void (^)(void))handler {
 }
 
+- (void)exportVideoWithCompletionHandler:(void (^)(void))handler errorHandler:(void (^)(void))errHdlr {
+	
+}
+
 - (TouchLayer *)layerWithPreviousLocation:(NSPoint)prevLoc forSequence:(NSInteger)seqNum {
 	return nil;
 }
