@@ -33,9 +33,6 @@ NSString * DLTouchPrivateFrameKey = @"privateFrame";
 	return self;
 }
 
-- (void)exportVideoWithCompletionHandler:(void (^)(void))handler {
-}
-
 - (void)exportVideoWithCompletionHandler:(void (^)(void))handler errorHandler:(void (^)(void))errHdlr {
 	
 }
