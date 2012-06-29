@@ -35,6 +35,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	self = [super initWithVideoAtPath:vdoPath destinationPath:dstPath touchesPropertyList:tchPlist];
 	rectLayerBuffer = [[NSMutableArray alloc] initWithCapacity:2];
 	dotLayerBuffer = [[NSMutableArray alloc] initWithCapacity:2];
+	dotMagnificationLayerBuffer = [[NSMutableArray alloc] initWithCapacity:10];
 	return self;
 }
 
@@ -476,6 +477,23 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 		[shapeLayer.pathKeyTimes addObject:touchTime];
 		// position of layer at time
 		[shapeLayer.pathValues addObject:curPointVal];
+		// create the companion dot
+		TouchLayer * magLayer = [TouchLayer layer];
+		magLayer.position = curPoint;
+		[dotMagnificationLayerBuffer addObject:magLayer];
+		// show the dot should start magnifying when the dot has appeared
+		CAAnimationGroup * animGroup = [CAAnimationGroup animation];
+		CABasicAnimation * opacAnim = [CABasicAnimation animationWithKeyPath:@"opacity"];
+		opacAnim.fromValue = (NSNumber *)kCFBooleanTrue;
+		opacAnim.toValue = (NSNumber *)kCFBooleanFalse;
+		CABasicAnimation * sizeAnim = [CABasicAnimation animationWithKeyPath:@"transform"];
+		sizeAnim.fromValue = [NSValue valueWithCATransform3D:CATransform3DIdentity];
+		sizeAnim.toValue = [NSValue valueWithCATransform3D:CATransform3DMakeScale(4.0, 4.0, 1.0)];
+		[animGroup setAnimations:[NSArray arrayWithObjects:opacAnim, sizeAnim, nil]];
+		animGroup.duration = 0.5;
+		animGroup.beginTime = shapeLayer.startTime;
+		animGroup.removedOnCompletion = NO;
+		[magLayer addAnimation:animGroup forKey:nil];
 	} else if ( ttype == UITouchPhaseCancelled || ttype == UITouchPhaseEnded ) {
 		if ( curTimeItval - shapeLayer.startTime < DL_MINIMUM_DURATION ) {
 			// we need to show the dot for longer time so that it's visually visible
@@ -797,6 +815,9 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 		
 		[theLayer addAnimation:fadeFrameAnimation forKey:@"rectOpacityAnimation"];
 		[theLayer addAnimation:moveFrameAnimation forKey:@"rectPositionAnimation"];
+	}
+	for (TouchLayer * theLayer in dotMagnificationLayerBuffer) {
+		[prnLayer addSublayer:theLayer];
 	}
 }
 

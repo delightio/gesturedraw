@@ -177,6 +177,8 @@
 	}
 	[rndUnit exportVideoWithCompletionHandler:^{
 		NSLog(@"export done");
+	} errorHandler:^{
+		NSLog(@"export error");
 	}];
 }
 

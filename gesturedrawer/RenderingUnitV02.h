@@ -28,6 +28,7 @@ typedef enum {
 @interface RenderingUnitV02 : RenderingUnit {
 	__strong NSMutableArray * rectLayerBuffer;
 	__strong NSMutableArray * dotLayerBuffer;
+	__strong NSMutableArray * dotMagnificationLayerBuffer;
 	UIInterfaceOrientation majorOrientation;
 	BOOL exportFinished;
 }
