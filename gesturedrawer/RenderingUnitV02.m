@@ -103,8 +103,10 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	session.outputURL = [NSURL fileURLWithPath:destinationFilePath];
 	session.outputFileType = AVFileTypeQuickTimeMovie;
 	
+	NSLog(@"Begin export video to path: %@", destinationFilePath);
+	
 	[session exportAsynchronouslyWithCompletionHandler:^{
-		NSLog(@"video exported - %@ %@", destinationFilePath, session.status == AVAssetExportSessionStatusFailed ? session.error : @"no error");
+		NSLog(@"Video exported - %@ %@", destinationFilePath, session.status == AVAssetExportSessionStatusFailed ? session.error : @"no error");
 		handler();
 	}];
 /*
