@@ -104,9 +104,16 @@
 	return shapeLayer;
 }
 
-- (void)exportVideoWithCompletionHandler:(void (^)(void))handler {
+- (void)exportVideoWithCompletionHandler:(void (^)(void))handler errorHandler:(void (^)(void))errHdlr {
 	AVAsset * srcVdoAsset = [AVAsset assetWithURL:[NSURL fileURLWithPath:sourceFilePath]];
- 	videoDuration = CMTimeGetSeconds(srcVdoAsset.duration);
+	if ( !srcVdoAsset.readable ) {
+		// throw an exception? quit the app?
+		self.encountersExportError = YES;
+		NSLog(@"Error: file not readable: %@", sourceFilePath);
+		errHdlr();
+		return;
+	}
+	videoDuration = CMTimeGetSeconds(srcVdoAsset.duration);
    AVAssetTrack * originalTrack = [[srcVdoAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
 	videoDuration = CMTimeGetSeconds(srcVdoAsset.duration);
 	// create composition from source

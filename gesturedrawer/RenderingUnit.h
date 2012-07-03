@@ -38,9 +38,10 @@ extern NSString * DLTouchPrivateFrameKey;
 @property (nonatomic) NSRect touchBounds;
 @property (nonatomic) NSTimeInterval videoDuration;
 @property (nonatomic, weak) CALayer * parentLayer;
+@property (nonatomic) BOOL encountersExportError;
 
 - (id)initWithVideoAtPath:(NSString *)vdoPath destinationPath:(NSString *)dstPath touchesPropertyList:(NSDictionary *)tchPlist;
-- (void)exportVideoWithCompletionHandler:(void (^)(void))handler;
+- (void)exportVideoWithCompletionHandler:(void (^)(void))handler errorHandler:(void (^)(void))errHdlr;
 - (TouchLayer *)layerForTouch:(NSDictionary *)aTouchDict;
 
 - (void)setupGestureAnimationsForLayer:(CALayer *)prnLayer;

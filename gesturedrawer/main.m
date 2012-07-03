@@ -87,9 +87,13 @@ int main(int argc, char * argv[])
 		[rndUnit exportVideoWithCompletionHandler:^{
 			[cndLock lock];
 			[cndLock unlockWithCondition:100];
+		} errorHandler:^{
+			[cndLock lock];
+			[cndLock unlockWithCondition:100];
 		}];
 		[cndLock lockWhenCondition:100];
 		[cndLock unlock];
+		return rndUnit.encountersExportError ? -1 : 0;
 	}
     return 0;
 }
