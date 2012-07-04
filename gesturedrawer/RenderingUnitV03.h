@@ -13,6 +13,7 @@
 	__strong NSMutableArray * rectLayerBuffer;
 	__strong NSMutableArray * dotLayerBuffer;
 	__strong NSMutableArray * dotMagnificationLayerBuffer;
+	__strong NSMutableArray * pathLayerBuffer;
 	UIInterfaceOrientation majorOrientation;
 	BOOL exportFinished;
 }

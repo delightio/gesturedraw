@@ -8,6 +8,7 @@
 
 #import "TouchLayer.h"
 #import "RectLayer.h"
+#import "TouchPathLayer.h"
 #import "RenderingUnitV03.h"
 
 #define DL_MINIMUM_DURATION 0.15
@@ -30,7 +31,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 - (id)initWithVideoAtPath:(NSString *)vdoPath destinationPath:(NSString *)dstPath touchesPropertyList:(NSDictionary *)tchPlist {
 	self = [super initWithVideoAtPath:vdoPath destinationPath:dstPath touchesPropertyList:tchPlist];
 	rectLayerBuffer = [[NSMutableArray alloc] initWithCapacity:2];
-	dotLayerBuffer = [[NSMutableArray alloc] initWithCapacity:2];
+//	dotLayerBuffer = [[NSMutableArray alloc] initWithCapacity:2];
 	dotMagnificationLayerBuffer = [[NSMutableArray alloc] initWithCapacity:10];
 	return self;
 }
@@ -342,6 +343,24 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	shapeLayer.needFadeIn = YES;
 }
 
+- (void)hideTouchPathLayer:(TouchPathLayer *)shapeLayer {
+	NSTimeInterval curTimeItval = shapeLayer.previousTime;
+	NSNumber * fadeTimeNum;
+	// fade the shape layer
+	fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval + DL_NORMAL_OPACITY_ANIMATION_DURATION) / videoDuration];
+	// fade out effect
+	// effect start time
+	[shapeLayer.opacityKeyTimes addObject:[NSNumber numberWithDouble:curTimeItval / videoDuration]];
+	// effect end time
+	[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
+	[shapeLayer.opacityValues addObject:(NSNumber *)kCFBooleanTrue];		// start value
+	[shapeLayer.opacityValues addObject:(NSNumber *)kCFBooleanFalse];		// end value
+	// make sure the dot is not moving till animation is done
+	[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
+	[shapeLayer.pathValues addObject:[NSValue valueWithPoint:shapeLayer.previousLocation]];
+	shapeLayer.needFadeIn = YES;
+}
+
 - (void)hideTouchLayer:(TouchLayer *)shapeLayer {
 	NSTimeInterval curTimeItval = shapeLayer.previousTime;
 	NSNumber * fadeTimeNum;
@@ -452,6 +471,10 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	shapeLayer.previousFrame = tFrame;
 	shapeLayer.previousTime = curTimeItval;
 	shapeLayer.currentSequence = [[touchDict objectForKey:DLTouchSequenceNumKey] integerValue];
+}
+
+- (CALayer *)configureDistinctTouchPoint:(NSDictionary *)touchDict forPathLayer:(TouchPathLayer *)pathLayer {
+	return nil;
 }
 
 - (CALayer *)configureDistinctTouchPoint:(NSDictionary *)touchDict forLayer:(TouchLayer *)shapeLayer {
@@ -607,8 +630,37 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	return shapeLayer;
 }
 
+- (TouchPathLayer *)pathLayerWithPreviousLocation:(NSPoint)prevLoc forSequence:(NSInteger)seqNum {
+	TouchPathLayer * shapeLayer = nil;
+	double d = 0.0;
+	double minDist = 9999.0;
+	for (TouchPathLayer * theLayer in pathLayerBuffer) {
+		if ( theLayer.currentSequence != seqNum ) {
+			// try to do the comparison only when the sequence number of the layer is not the same as the requested one. If they are the same, the layer has been compared and matached another points already.
+			d = [theLayer discrepancyWithPreviousLocation:prevLoc];
+			if ( d < minDist ) {
+				shapeLayer = theLayer;
+				minDist = d;
+			}
+		}
+	}
+	shapeLayer.currentSequence = seqNum;
+	return shapeLayer;
+}
+
 - (TouchLayer *)layerForTouch:(NSDictionary *)aTouchDict {
 	TouchLayer * shapeLayer = [self layerWithPreviousLocation:NSPointFromString([aTouchDict objectForKey:DLTouchPreviousLocationKey]) forSequence:[[aTouchDict objectForKey:DLTouchSequenceNumKey] integerValue]];
+	if ( shapeLayer == nil ) {
+		// create a new layer
+		shapeLayer = [TouchLayer layer];
+		[self.parentLayer addSublayer:shapeLayer];
+		[dotLayerBuffer addObject:shapeLayer];
+	}
+	return shapeLayer;
+}
+
+- (TouchPathLayer *)pathLayerForTouch:(NSDictionary *)aTouchDict {
+	TouchPathLayer * shapeLayer = [self pathLayerWithPreviousLocation:NSPointFromString([aTouchDict objectForKey:DLTouchPreviousLocationKey]) forSequence:[[aTouchDict objectForKey:DLTouchSequenceNumKey] integerValue]];
 	if ( shapeLayer == nil ) {
 		// create a new layer
 		shapeLayer = [TouchLayer layer];
@@ -650,11 +702,14 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 			[groupArray addObject:[NSArray arrayWithObject:[touches objectAtIndex:idx - 1]]];
 		}
 	}
+	// initialize path buffer
+	pathLayerBuffer = [[NSMutableArray alloc] initWithCapacity:[groupArray count]];
 	NSDictionary * touchDict = nil;
 	NSString * locStr = nil;
 	idx = 0;
 	NSInteger prevIdx = 0;
 	TouchLayer * shapeLayer = nil;
+	TouchPathLayer * pathLayer = nil;
 	for (id item in groupArray) {
 		NSArray * theTouches = item;
 		curSeqNum = 0;
@@ -670,9 +725,17 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 					// this is a touch point, perform the normal logic
 					shapeLayer = [self layerForTouch:touchDict];
 					[self configureDistinctTouchPoint:touchDict forLayer:shapeLayer];
+					pathLayer = [self pathLayerForTouch:touchDict];
+					[self configureDistinctTouchPoint:touchDict forPathLayer:pathLayer];
 				} else {
 					// this is a rect
 					[self configureRectLayerTouch:touchDict];
+				}
+			}
+			for (TouchPathLayer * pathLayer in pathLayerBuffer) {
+				if ( pathLayer.currentSequence != curSeqNum ) {
+					if ( !pathLayer.needFadeIn ) [self hideTouchPathLayer:pathLayer];
+					pathLayer.currentSequence = curSeqNum;
 				}
 			}
 			for (TouchLayer * theLayer in dotLayerBuffer) {

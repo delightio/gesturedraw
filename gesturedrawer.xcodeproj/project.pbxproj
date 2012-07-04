@@ -45,6 +45,8 @@
 		A9C800071566CB010002B91F /* touches-158.plist in Resources */ = {isa = PBXBuildFile; fileRef = A9C800051566CB010002B91F /* touches-158.plist */; };
 		A9C800091566CBA00002B91F /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9C800081566CBA00002B91F /* QuartzCore.framework */; };
 		A9C8000F1566D1470002B91F /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9C8000E1566D1470002B91F /* AssetsLibrary.framework */; };
+		A9CD33C015A43A2F00F93B27 /* TouchPathLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A9CD33BF15A43A2F00F93B27 /* TouchPathLayer.m */; };
+		A9CD33C115A43A2F00F93B27 /* TouchPathLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A9CD33BF15A43A2F00F93B27 /* TouchPathLayer.m */; };
 		A9F1E834155C34A3001C0C37 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9F1E833155C34A3001C0C37 /* Foundation.framework */; };
 		A9F1E837155C34A3001C0C37 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A9F1E836155C34A3001C0C37 /* main.m */; };
 		A9F1E83B155C34A3001C0C37 /* gesturedrawer.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = A9F1E83A155C34A3001C0C37 /* gesturedrawer.1 */; };
@@ -120,6 +122,8 @@
 		A9C800051566CB010002B91F /* touches-158.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "touches-158.plist"; sourceTree = "<group>"; };
 		A9C800081566CBA00002B91F /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.1.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
 		A9C8000E1566D1470002B91F /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.1.sdk/System/Library/Frameworks/AssetsLibrary.framework; sourceTree = DEVELOPER_DIR; };
+		A9CD33BE15A43A2F00F93B27 /* TouchPathLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TouchPathLayer.h; sourceTree = "<group>"; };
+		A9CD33BF15A43A2F00F93B27 /* TouchPathLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TouchPathLayer.m; sourceTree = "<group>"; };
 		A9EAEFE3155D03AB005B17ED /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		A9F1E82F155C34A3001C0C37 /* gesturedrawer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = gesturedrawer; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9F1E833155C34A3001C0C37 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -298,6 +302,8 @@
 				A93E6546157595BD00AA1F20 /* RenderingUnitV01.m */,
 				A96D6AEE157802DF00AEC72C /* RectLayer.h */,
 				A96D6AEF157802E000AEC72C /* RectLayer.m */,
+				A9CD33BE15A43A2F00F93B27 /* TouchPathLayer.h */,
+				A9CD33BF15A43A2F00F93B27 /* TouchPathLayer.m */,
 			);
 			path = gesturedrawer;
 			sourceTree = "<group>";
@@ -503,6 +509,7 @@
 				A93E6547157595BD00AA1F20 /* RenderingUnitV01.m in Sources */,
 				A96D6AF0157802E000AEC72C /* RectLayer.m in Sources */,
 				A916978215A41EBC00508369 /* RenderingUnitV03.m in Sources */,
+				A9CD33C015A43A2F00F93B27 /* TouchPathLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -518,6 +525,7 @@
 				A93E6548157595BD00AA1F20 /* RenderingUnitV01.m in Sources */,
 				A96D6AF2157802EA00AEC72C /* RectLayer.m in Sources */,
 				A916978315A41EBC00508369 /* RenderingUnitV03.m in Sources */,
+				A9CD33C115A43A2F00F93B27 /* TouchPathLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
