@@ -54,7 +54,7 @@
 }
 
 - (TouchLayer *)layerForTouch:(NSDictionary *)aTouchDict {
-	UITouchPhase ttype = [[aTouchDict objectForKey:DLTouchPhaseKey] integerValue];
+	UITouchPhase ttype = (UITouchPhase)[[aTouchDict objectForKey:DLTouchPhaseKey] integerValue];
 	TouchLayer * shapeLayer = nil;//[touchIDLayerMapping objectForKey:aTouchID];
 	switch (ttype) {
 		case UITouchPhaseBegan:
@@ -226,7 +226,7 @@
 		curTimeItval = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
 		touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
 		// fade in/out of dot
-		ttype = [[touchDict objectForKey:DLTouchPhaseKey] integerValue];
+		ttype = (UITouchPhase)[[touchDict objectForKey:DLTouchPhaseKey] integerValue];
 		curPoint = NSPointFromString([touchDict objectForKey:DLTouchCurrentLocationKey]);
 		curPointVal = [NSValue valueWithPoint:curPoint];
 		if ( ttype == UITouchPhaseBegan ) {

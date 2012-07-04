@@ -8,6 +8,10 @@
 
 #import "RenderingUnit.h"
 
+extern NSString * DLDeviceOrientationKey;
+extern NSString * DLInterfaceOrientationKey;
+extern NSString * DLOrientationTimeKey;
+
 typedef enum {
     UIDeviceOrientationUnknown,
     UIDeviceOrientationPortrait,            // Device oriented vertically, home button on the bottom

@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		A91657021565B6A700B5EB80 /* dot.png in Resources */ = {isa = PBXBuildFile; fileRef = A91657011565B6A700B5EB80 /* dot.png */; };
+		A916978215A41EBC00508369 /* RenderingUnitV03.m in Sources */ = {isa = PBXBuildFile; fileRef = A916978115A41EBC00508369 /* RenderingUnitV03.m */; };
+		A916978315A41EBC00508369 /* RenderingUnitV03.m in Sources */ = {isa = PBXBuildFile; fileRef = A916978115A41EBC00508369 /* RenderingUnitV03.m */; };
 		A916A9DE1566C9F500362B04 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A916A9DD1566C9F500362B04 /* UIKit.framework */; };
 		A916A9DF1566C9F500362B04 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9F1E833155C34A3001C0C37 /* Foundation.framework */; };
 		A916A9E11566C9F500362B04 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A916A9E01566C9F500362B04 /* CoreGraphics.framework */; };
@@ -82,6 +84,8 @@
 
 /* Begin PBXFileReference section */
 		A91657011565B6A700B5EB80 /* dot.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dot.png; sourceTree = "<group>"; };
+		A916978015A41EBC00508369 /* RenderingUnitV03.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderingUnitV03.h; sourceTree = "<group>"; };
+		A916978115A41EBC00508369 /* RenderingUnitV03.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderingUnitV03.m; sourceTree = "<group>"; };
 		A916A9DB1566C9F500362B04 /* GestureCompositorMobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GestureCompositorMobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A916A9DD1566C9F500362B04 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		A916A9E01566C9F500362B04 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
@@ -286,6 +290,8 @@
 				A99DED39156509020022DD0F /* TouchLayer.m */,
 				A9967767156B99EC00A55D7B /* RenderingUnit.h */,
 				A9967768156B99EC00A55D7B /* RenderingUnit.m */,
+				A916978015A41EBC00508369 /* RenderingUnitV03.h */,
+				A916978115A41EBC00508369 /* RenderingUnitV03.m */,
 				A93E653F1575959C00AA1F20 /* RenderingUnitV02.h */,
 				A93E65401575959C00AA1F20 /* RenderingUnitV02.m */,
 				A93E6545157595BD00AA1F20 /* RenderingUnitV01.h */,
@@ -496,6 +502,7 @@
 				A93E65411575959C00AA1F20 /* RenderingUnitV02.m in Sources */,
 				A93E6547157595BD00AA1F20 /* RenderingUnitV01.m in Sources */,
 				A96D6AF0157802E000AEC72C /* RectLayer.m in Sources */,
+				A916978215A41EBC00508369 /* RenderingUnitV03.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -510,6 +517,7 @@
 				A93E65421575959C00AA1F20 /* RenderingUnitV02.m in Sources */,
 				A93E6548157595BD00AA1F20 /* RenderingUnitV01.m in Sources */,
 				A96D6AF2157802EA00AEC72C /* RectLayer.m in Sources */,
+				A916978315A41EBC00508369 /* RenderingUnitV03.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -725,6 +733,7 @@
 				A92D6A821582B7B20078866E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		A9F1E829155C34A3001C0C37 /* Build configuration list for PBXProject "gesturedrawer" */ = {
 			isa = XCConfigurationList;

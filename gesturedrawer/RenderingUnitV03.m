@@ -1,5 +1,5 @@
 //
-//  RenderingUnitV02.m
+//  RenderingUnitV03.m
 //  gesturedrawer
 //
 //  Created by Bill So on 5/29/12.
@@ -8,16 +8,12 @@
 
 #import "TouchLayer.h"
 #import "RectLayer.h"
-#import "RenderingUnitV02.h"
+#import "RenderingUnitV03.h"
 
 #define DL_MINIMUM_DURATION 0.15
 #define DL_NORMAL_OPACITY_ANIMATION_DURATION 0.1
 #define DL_TOUCH_POINT_TYPE		1000
 #define DL_TOUCH_RECT_TYPE		1001
-
-NSString * DLDeviceOrientationKey = @"deviceOrientation";
-NSString * DLInterfaceOrientationKey = @"interfaceOrientation";
-NSString * DLOrientationTimeKey = @"time";
 
 NS_INLINE CGPoint MidPointForCGRect(CGRect cgrect) {
 	return CGPointMake((cgrect.origin.x + cgrect.size.width) / 2.0, (cgrect.origin.y + cgrect.size.height) / 2.0);
@@ -29,7 +25,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	return sqrt((xDist * xDist) + (yDist * yDist));
 }
 
-@implementation RenderingUnitV02
+@implementation RenderingUnitV03
 
 - (id)initWithVideoAtPath:(NSString *)vdoPath destinationPath:(NSString *)dstPath touchesPropertyList:(NSDictionary *)tchPlist {
 	self = [super initWithVideoAtPath:vdoPath destinationPath:dstPath touchesPropertyList:tchPlist];
