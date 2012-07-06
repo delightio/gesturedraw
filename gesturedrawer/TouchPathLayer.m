@@ -17,7 +17,7 @@
 @synthesize previousLocation = _previousLocation;
 @synthesize previousTime = _previousTime;
 @synthesize currentSequence = _currentSequence;
-@synthesize needFadeIn = _needFadeIn;
+//@synthesize needFadeIn = _needFadeIn;
 
 - (id)init {
 	self = [super init];
@@ -26,29 +26,34 @@
 	CGColorRef theColor = CGColorCreateGenericRGB(0.0, 0.0, 1.0, 1.0);
 	self.strokeColor = theColor;
 	CGColorRelease(theColor);
-	self.lineWidth = 24.0;
+	self.fillColor = nil;
+	self.lineWidth = 14.0;
 	self.lineCap = kCALineCapRound;
 	
-	_needFadeIn = YES;
+//	_needFadeIn = YES;
 	_pathKeyTimes = [[NSMutableArray alloc] initWithCapacity:10];
 	_opacityKeyTimes = [[NSMutableArray alloc] initWithCapacity:10];
-	_pathValues = [[NSMutableArray alloc] initWithCapacity:10];
 	_opacityValues = [[NSMutableArray alloc] initWithCapacity:10];
 	_previousLocation = NSMakePoint(-9999.0, -9999.0);
 
 	return self;
 }
 
-- (void)addPoint:(CGPoint)aPoint {
-	CGPathRef fixedPath = self.path;
+- (void)addPathPoint:(CGPoint)aPoint atKeyFrame:(NSNumber *)fmKey {
 	CGMutablePathRef thePath = nil;
-	if ( fixedPath == nil ) {
+	if ( _pathValues == nil ) {
+		_pathValues = [[NSMutableArray alloc] initWithCapacity:10];
+		// create new paths
 		thePath = CGPathCreateMutable();
+		CGPathMoveToPoint(thePath, NULL, aPoint.x, aPoint.y);
+		CGPathAddLineToPoint(thePath, NULL, aPoint.x, aPoint.y);
 	} else {
-		thePath = CGPathCreateMutableCopy(fixedPath);
+		// create a new path from previous path
+		thePath = CGPathCreateMutableCopy((__bridge CGMutablePathRef)[_pathValues lastObject]);
+		CGPathAddLineToPoint(thePath, NULL, aPoint.x, aPoint.y);
 	}
-	CGPathAddLineToPoint(thePath, NULL, aPoint.x, aPoint.y);
-	self.path =  thePath;
+	[_pathValues addObject:(id)CFBridgingRelease(thePath)];
+	[_pathKeyTimes addObject:fmKey];
 }
 
 - (double)discrepancyWithPreviousLocation:(NSPoint)prevLoc {

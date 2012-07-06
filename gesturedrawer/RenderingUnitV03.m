@@ -33,6 +33,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	rectLayerBuffer = [[NSMutableArray alloc] initWithCapacity:2];
 //	dotLayerBuffer = [[NSMutableArray alloc] initWithCapacity:2];
 	dotMagnificationLayerBuffer = [[NSMutableArray alloc] initWithCapacity:10];
+	inflightPathLayerBuffer = [[NSMutableArray alloc] initWithCapacity:10];
 	return self;
 }
 
@@ -216,16 +217,20 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	return sqrt((xDist * xDist) + (yDist * yDist));
 }
 
-- (NSInteger)numberOfInFlightDotLayer {
-	NSInteger c = 0;
-	for (TouchLayer * theLayer in dotLayerBuffer) {
-		if ( theLayer.needFadeIn == NO ) {
-			// in-flight layer
-			c++;
-		}
-	}
-	return c;
+- (NSUInteger)numberOfInflightPathLayer {
+	return [inflightPathLayerBuffer count];
 }
+
+//- (NSInteger)numberOfInFlightDotLayer {
+//	NSInteger c = 0;
+//	for (TouchLayer * theLayer in dotLayerBuffer) {
+//		if ( theLayer.needFadeIn == NO ) {
+//			// in-flight layer
+//			c++;
+//		}
+//	}
+//	return c;
+//}
 
 - (void)showRectLayerForTouch:(NSDictionary *)touchDict {
 	RectLayer * shapeLayer = nil;
@@ -343,22 +348,23 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	shapeLayer.needFadeIn = YES;
 }
 
-- (void)hideTouchPathLayer:(TouchPathLayer *)shapeLayer {
-	NSTimeInterval curTimeItval = shapeLayer.previousTime;
+- (void)hideTouchPathLayer:(TouchPathLayer *)pathLayer {
+	NSTimeInterval curTimeItval = pathLayer.previousTime;
 	NSNumber * fadeTimeNum;
 	// fade the shape layer
 	fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval + DL_NORMAL_OPACITY_ANIMATION_DURATION) / videoDuration];
 	// fade out effect
 	// effect start time
-	[shapeLayer.opacityKeyTimes addObject:[NSNumber numberWithDouble:curTimeItval / videoDuration]];
+	[pathLayer.opacityKeyTimes addObject:[NSNumber numberWithDouble:curTimeItval / videoDuration]];
 	// effect end time
-	[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
-	[shapeLayer.opacityValues addObject:(NSNumber *)kCFBooleanTrue];		// start value
-	[shapeLayer.opacityValues addObject:(NSNumber *)kCFBooleanFalse];		// end value
+	[pathLayer.opacityKeyTimes addObject:fadeTimeNum];
+	[pathLayer.opacityValues addObject:(NSNumber *)kCFBooleanTrue];		// start value
+	[pathLayer.opacityValues addObject:(NSNumber *)kCFBooleanFalse];		// end value
 	// make sure the dot is not moving till animation is done
-	[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
-	[shapeLayer.pathValues addObject:[NSValue valueWithPoint:shapeLayer.previousLocation]];
-	shapeLayer.needFadeIn = YES;
+//	[pathLayer.pathKeyTimes addObject:fadeTimeNum];
+//	[pathLayer.pathValues addObject:[NSValue valueWithPoint:pathLayer.previousLocation]];
+	// take the layer from inflight layer
+	[inflightPathLayerBuffer removeObject:pathLayer];
 }
 
 - (void)hideTouchLayer:(TouchLayer *)shapeLayer {
@@ -456,8 +462,8 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 			[shapeLayer.opacityValues addObject:oneNum];		// start value
 			[shapeLayer.opacityValues addObject:zeroNum];		// end value
 			// move the rect
-//			[shapeLayer.pathKeyTimes addObject:touchTime];
-//			[shapeLayer.pathValues addObject:curFrameVal];
+			[shapeLayer.pathKeyTimes addObject:touchTime];
+			[shapeLayer.pathValues addObject:curFrameVal];
 			// keep rect stationary for fade out effect
 			[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
 			[shapeLayer.pathValues addObject:curFrameVal];
@@ -474,11 +480,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 }
 
 - (CALayer *)configureDistinctTouchPoint:(NSDictionary *)touchDict forPathLayer:(TouchPathLayer *)pathLayer {
-	return nil;
-}
-
-- (CALayer *)configureDistinctTouchPoint:(NSDictionary *)touchDict forLayer:(TouchLayer *)shapeLayer {
-	if ( shapeLayer == nil ) return nil;
+	if ( pathLayer == nil ) return nil;
 	//		privateTouch = [[touchDict objectForKey:DLTouchPrivateKey] boolValue];
 	// setup the layer's position at time
 	// time
@@ -487,29 +489,27 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	// fade in/out of dot
 	UITouchPhase ttype = (UITouchPhase)[[touchDict objectForKey:DLTouchPhaseKey] integerValue];
 	NSPoint curPoint = NSPointFromString([touchDict objectForKey:DLTouchCurrentLocationKey]);
-	NSValue * curPointVal = [NSValue valueWithPoint:curPoint];
+//	NSValue * curPointVal = [NSValue valueWithPoint:curPoint];
 	NSNumber * fadeTimeNum;
 	NSNumber * zeroNum = (NSNumber *)kCFBooleanFalse;
 	NSNumber * oneNum = (NSNumber *)kCFBooleanTrue;
 	// do things normal
-	if ( ttype == UITouchPhaseBegan || shapeLayer.needFadeIn ) {
-		shapeLayer.needFadeIn = NO;
-		shapeLayer.startTime = curTimeItval;
+	if ( ttype == UITouchPhaseBegan ) {
+		pathLayer.startTime = curTimeItval;
 		// fade in effect
 		// effect start time
 		fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval - DL_NORMAL_OPACITY_ANIMATION_DURATION) / videoDuration];
-		[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
+		[pathLayer.opacityKeyTimes addObject:fadeTimeNum];
 		// effect end time
-		[shapeLayer.opacityKeyTimes addObject:touchTime];
-		[shapeLayer.opacityValues addObject:zeroNum];		// start value
-		[shapeLayer.opacityValues addObject:oneNum];		// end value
+		[pathLayer.opacityKeyTimes addObject:touchTime];
+		[pathLayer.opacityValues addObject:zeroNum];		// start value
+		[pathLayer.opacityValues addObject:oneNum];		// end value
 		// make sure the dot is "in" the location when animation starts
-		[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
-		[shapeLayer.pathValues addObject:curPointVal];
+//		[pathLayer addPathPoint:curPoint atKeyFrame:fadeTimeNum];
 		// set paths
-		[shapeLayer.pathKeyTimes addObject:touchTime];
+		[pathLayer addPathPoint:curPoint atKeyFrame:touchTime];
 		// position of layer at time
-		[shapeLayer.pathValues addObject:curPointVal];
+//		[pathLayer.pathValues addObject:curPointVal];
 		// create the companion dot
 		TouchLayer * magLayer = [TouchLayer layer];
 		magLayer.position = curPoint;
@@ -523,118 +523,94 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 		sizeAnim.fromValue = [NSValue valueWithCATransform3D:CATransform3DIdentity];
 		sizeAnim.toValue = [NSValue valueWithCATransform3D:CATransform3DMakeScale(4.0, 4.0, 1.0)];
 		[animGroup setAnimations:[NSArray arrayWithObjects:opacAnim, sizeAnim, nil]];
-		animGroup.duration = 0.5;
-		animGroup.beginTime = shapeLayer.startTime;
+		animGroup.duration = 0.75;
+		animGroup.beginTime = curTimeItval;
 		animGroup.removedOnCompletion = NO;
 		[magLayer addAnimation:animGroup forKey:nil];
 	} else if ( ttype == UITouchPhaseCancelled || ttype == UITouchPhaseEnded ) {
-		if ( curTimeItval - shapeLayer.startTime < DL_MINIMUM_DURATION ) {
+		if ( curTimeItval - pathLayer.startTime < DL_MINIMUM_DURATION ) {
 			// we need to show the dot for longer time so that it's visually visible
-			curTimeItval = shapeLayer.startTime + DL_MINIMUM_DURATION;
+			curTimeItval = pathLayer.startTime + DL_MINIMUM_DURATION;
 			touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
 		}
 		// fade out effect
 		// effect start time
-		[shapeLayer.opacityKeyTimes addObject:touchTime];
+		[pathLayer.opacityKeyTimes addObject:touchTime];
 		// effect end time
 		fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval + DL_NORMAL_OPACITY_ANIMATION_DURATION) / videoDuration];
-		[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
-		[shapeLayer.opacityValues addObject:oneNum];		// start value
-		[shapeLayer.opacityValues addObject:zeroNum];		// end value
+		[pathLayer.opacityKeyTimes addObject:fadeTimeNum];
+		[pathLayer.opacityValues addObject:oneNum];		// start value
+		[pathLayer.opacityValues addObject:zeroNum];		// end value
 		// set paths
-		[shapeLayer.pathKeyTimes addObject:touchTime];
+		[pathLayer addPathPoint:curPoint atKeyFrame:touchTime];
+		[pathLayer.pathKeyTimes addObject:touchTime];
 		// position of layer at time
-		[shapeLayer.pathValues addObject:curPointVal];
+//		[pathLayer.pathValues addObject:curPointVal];
 		// make sure the dot is not moving till animation is done
-		[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
-		[shapeLayer.pathValues addObject:curPointVal];
+//		[pathLayer.pathKeyTimes addObject:fadeTimeNum];
+//		[pathLayer.pathValues addObject:curPointVal];
+		// retire the layer
+		[inflightPathLayerBuffer removeObject:pathLayer];
 	} else {
-		// set paths
-		[shapeLayer.pathKeyTimes addObject:touchTime];
-		// position of layer at time
-		[shapeLayer.pathValues addObject:curPointVal];
+		[pathLayer addPathPoint:curPoint atKeyFrame:touchTime];
 	}
-	shapeLayer.previousLocation = curPoint;
-	shapeLayer.previousTime = curTimeItval;
-	shapeLayer.currentSequence = [[touchDict objectForKey:DLTouchSequenceNumKey] integerValue];
-	return shapeLayer;
+	pathLayer.previousLocation = curPoint;
+	pathLayer.previousTime = curTimeItval;
+	pathLayer.currentSequence = [[touchDict objectForKey:DLTouchSequenceNumKey] integerValue];
+	return pathLayer;
 }
 
 - (BOOL)currentTouch:(id)curItem hasDifferentCompositionWithPreviousTouch:(id)prevItem {
 	// we want to check whether the previous set of touches belongs to the same event as the current set of touches.
 	NSDictionary * prevDict;
-//	if ( [curItem isKindOfClass:[NSDictionary class]] && [prevItem isKindOfClass:[NSDictionary class]] ) {
-//		prevDict = prevItem;
-//		if ( [curItem objectForKey:DLTouchPrivateFrameKey] ) {
-//			// curItem is a rect
-//			if ( [prevDict objectForKey:DLTouchPrivateFrameKey] == nil ) {
-//				NSInteger curPhase = [[curItem objectForKey:DLTouchPhaseKey] integerValue];
-//				NSInteger prevPhase = [[prevDict objectForKey:DLTouchPhaseKey] integerValue];
-//				if ( curPhase == prevPhase || (( curPhase == UITouchPhaseMoved || curPhase == UITouchPhaseStationary ) && ( prevPhase == UITouchPhaseBegan || prevPhase == UITouchPhaseStationary || prevPhase == UITouchPhaseMoved )) ) {
-//					// the previous touch is a point. We are at the boundary case.
-//					return YES;
-//				}
-//			}
-//		} else {
-//			// curItem is point
-//			if ( [prevDict objectForKey:DLTouchPrivateFrameKey] ) {
-//				NSInteger curPhase = [[curItem objectForKey:DLTouchPhaseKey] integerValue];
-//				NSInteger prevPhase = [[prevDict objectForKey:DLTouchPhaseKey] integerValue];
-//				if ( curPhase == prevPhase || (( curPhase == UITouchPhaseMoved || curPhase == UITouchPhaseStationary ) && ( prevPhase == UITouchPhaseBegan || prevPhase == UITouchPhaseStationary || prevPhase == UITouchPhaseMoved )) ) {
-//					return YES;
-//				}
-//			}
-//		}
-//	} else if ( [curItem isKindOfClass:[NSArray class]] && [prevItem isKindOfClass:[NSArray class]] ) {
-		if ( [curItem count] == [prevItem count] ) {
-			// we need to do some checking
-			NSInteger thePhase;
-			BOOL needMoreChecking = YES;
-			for (NSDictionary * curDict in curItem) {
-				thePhase = [[curDict objectForKey:DLTouchPhaseKey] integerValue];
-				if ( thePhase != UITouchPhaseMoved && thePhase != UITouchPhaseStationary ) {
+	if ( [curItem count] == [prevItem count] ) {
+		// we need to do some checking
+		NSInteger thePhase;
+		BOOL needMoreChecking = YES;
+		for (NSDictionary * curDict in curItem) {
+			thePhase = [[curDict objectForKey:DLTouchPhaseKey] integerValue];
+			if ( thePhase != UITouchPhaseMoved && thePhase != UITouchPhaseStationary ) {
+				needMoreChecking = NO;
+				break;
+			}
+		}
+		if ( needMoreChecking ) {
+			for (prevDict in prevItem) {
+				thePhase = [[prevDict objectForKey:DLTouchPhaseKey] integerValue];
+				if ( thePhase != UITouchPhaseBegan && thePhase != UITouchPhaseStationary && thePhase != UITouchPhaseMoved ) {
 					needMoreChecking = NO;
 					break;
 				}
 			}
-			if ( needMoreChecking ) {
-				for (prevDict in prevItem) {
-					thePhase = [[prevDict objectForKey:DLTouchPhaseKey] integerValue];
-					if ( thePhase != UITouchPhaseBegan && thePhase != UITouchPhaseStationary && thePhase != UITouchPhaseMoved ) {
-						needMoreChecking = NO;
-						break;
-					}
-				}
-			}
-			return needMoreChecking;
 		}
-//	}
+		return needMoreChecking;
+	}
 	return NO;
 }
 
-- (TouchLayer *)layerWithPreviousLocation:(NSPoint)prevLoc forSequence:(NSInteger)seqNum {
-	TouchLayer * shapeLayer = nil;
-	double d = 0.0;
-	double minDist = 9999.0;
-	for (TouchLayer * theLayer in dotLayerBuffer) {
-		if ( theLayer.currentSequence != seqNum ) {
-			// try to do the comparison only when the sequence number of the layer is not the same as the requested one. If they are the same, the layer has been compared and matached another points already.
-			d = [theLayer discrepancyWithPreviousLocation:prevLoc];
-			if ( d < minDist ) {
-				shapeLayer = theLayer;
-				minDist = d;
-			}
-		}
-	}
-	shapeLayer.currentSequence = seqNum;
-	return shapeLayer;
-}
+//- (TouchLayer *)layerWithPreviousLocation:(NSPoint)prevLoc forSequence:(NSInteger)seqNum {
+//	TouchLayer * shapeLayer = nil;
+//	double d = 0.0;
+//	double minDist = 9999.0;
+//	for (TouchLayer * theLayer in dotLayerBuffer) {
+//		if ( theLayer.currentSequence != seqNum ) {
+//			// try to do the comparison only when the sequence number of the layer is not the same as the requested one. If they are the same, the layer has been compared and matached another points already.
+//			d = [theLayer discrepancyWithPreviousLocation:prevLoc];
+//			if ( d < minDist ) {
+//				shapeLayer = theLayer;
+//				minDist = d;
+//			}
+//		}
+//	}
+//	shapeLayer.currentSequence = seqNum;
+//	return shapeLayer;
+//}
 
 - (TouchPathLayer *)pathLayerWithPreviousLocation:(NSPoint)prevLoc forSequence:(NSInteger)seqNum {
 	TouchPathLayer * shapeLayer = nil;
 	double d = 0.0;
 	double minDist = 9999.0;
-	for (TouchPathLayer * theLayer in pathLayerBuffer) {
+	for (TouchPathLayer * theLayer in inflightPathLayerBuffer) {
 		if ( theLayer.currentSequence != seqNum ) {
 			// try to do the comparison only when the sequence number of the layer is not the same as the requested one. If they are the same, the layer has been compared and matached another points already.
 			d = [theLayer discrepancyWithPreviousLocation:prevLoc];
@@ -648,24 +624,35 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	return shapeLayer;
 }
 
-- (TouchLayer *)layerForTouch:(NSDictionary *)aTouchDict {
-	TouchLayer * shapeLayer = [self layerWithPreviousLocation:NSPointFromString([aTouchDict objectForKey:DLTouchPreviousLocationKey]) forSequence:[[aTouchDict objectForKey:DLTouchSequenceNumKey] integerValue]];
-	if ( shapeLayer == nil ) {
-		// create a new layer
-		shapeLayer = [TouchLayer layer];
-		[self.parentLayer addSublayer:shapeLayer];
-		[dotLayerBuffer addObject:shapeLayer];
-	}
-	return shapeLayer;
-}
+//- (TouchLayer *)layerForTouch:(NSDictionary *)aTouchDict {
+//	TouchLayer * shapeLayer = [self layerWithPreviousLocation:NSPointFromString([aTouchDict objectForKey:DLTouchPreviousLocationKey]) forSequence:[[aTouchDict objectForKey:DLTouchSequenceNumKey] integerValue]];
+//	if ( shapeLayer == nil ) {
+//		// create a new layer
+//		shapeLayer = [TouchLayer layer];
+//		[self.parentLayer addSublayer:shapeLayer];
+//		[dotLayerBuffer addObject:shapeLayer];
+//	}
+//	return shapeLayer;
+//}
 
 - (TouchPathLayer *)pathLayerForTouch:(NSDictionary *)aTouchDict {
-	TouchPathLayer * shapeLayer = [self pathLayerWithPreviousLocation:NSPointFromString([aTouchDict objectForKey:DLTouchPreviousLocationKey]) forSequence:[[aTouchDict objectForKey:DLTouchSequenceNumKey] integerValue]];
+	UITouchPhase touchPhase = [[aTouchDict objectForKey:DLTouchPhaseKey] integerValue];
+	TouchPathLayer * shapeLayer;
+	if ( touchPhase == UITouchPhaseBegan ) {
+		// this is a new touch, always new layer
+		shapeLayer = [TouchPathLayer layer];
+		[self.parentLayer addSublayer:shapeLayer];
+		[pathLayerBuffer addObject:shapeLayer];
+		[inflightPathLayerBuffer addObject:shapeLayer];
+	} else {
+		shapeLayer = [self pathLayerWithPreviousLocation:NSPointFromString([aTouchDict objectForKey:DLTouchPreviousLocationKey]) forSequence:[[aTouchDict objectForKey:DLTouchSequenceNumKey] integerValue]];
+	}
 	if ( shapeLayer == nil ) {
 		// create a new layer
-		shapeLayer = [TouchLayer layer];
+		shapeLayer = [TouchPathLayer layer];
 		[self.parentLayer addSublayer:shapeLayer];
-		[dotLayerBuffer addObject:shapeLayer];
+		[pathLayerBuffer addObject:shapeLayer];
+		[inflightPathLayerBuffer addObject:shapeLayer];
 	}
 	return shapeLayer;
 }
@@ -708,7 +695,6 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	NSString * locStr = nil;
 	idx = 0;
 	NSInteger prevIdx = 0;
-	TouchLayer * shapeLayer = nil;
 	TouchPathLayer * pathLayer = nil;
 	for (id item in groupArray) {
 		NSArray * theTouches = item;
@@ -723,8 +709,8 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 				locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
 				if ( locStr ) {
 					// this is a touch point, perform the normal logic
-					shapeLayer = [self layerForTouch:touchDict];
-					[self configureDistinctTouchPoint:touchDict forLayer:shapeLayer];
+//					shapeLayer = [self layerForTouch:touchDict];
+//					[self configureDistinctTouchPoint:touchDict forLayer:shapeLayer];
 					pathLayer = [self pathLayerForTouch:touchDict];
 					[self configureDistinctTouchPoint:touchDict forPathLayer:pathLayer];
 				} else {
@@ -732,19 +718,12 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 					[self configureRectLayerTouch:touchDict];
 				}
 			}
-			for (TouchPathLayer * pathLayer in pathLayerBuffer) {
-				if ( pathLayer.currentSequence != curSeqNum ) {
-					if ( !pathLayer.needFadeIn ) [self hideTouchPathLayer:pathLayer];
-					pathLayer.currentSequence = curSeqNum;
-				}
-			}
-			for (TouchLayer * theLayer in dotLayerBuffer) {
-				if ( theLayer.currentSequence != curSeqNum ) {
-					// dump this layer
-					if ( !theLayer.needFadeIn ) [self hideTouchLayer:theLayer];
-					theLayer.currentSequence = curSeqNum;
-				}
-			}
+//			for (TouchPathLayer * pathLayer in pathLayerBuffer) {
+//				if ( pathLayer.currentSequence != curSeqNum ) {
+//					if ( !pathLayer.needFadeIn ) [self hideTouchPathLayer:pathLayer];
+//					pathLayer.currentSequence = curSeqNum;
+//				}
+//			}
 			for (RectLayer * theLayer in rectLayerBuffer) {
 				if ( theLayer.currentSequence != curSeqNum ) {
 					if ( !theLayer.needFadeIn ) [self hideRectLayer:theLayer];
@@ -755,15 +734,15 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 			// match layer with touches first
 			double d = 0.0;
 			NSUInteger idx = 0;
-			if ( [self numberOfInFlightDotLayer] > [theTouches count] ) {
-				NSMutableArray * remainingLayers = [NSMutableArray arrayWithArray:dotLayerBuffer];
+			if ( [self numberOfInflightPathLayer] > [theTouches count] ) {
+				NSMutableArray * remainingLayers = [NSMutableArray arrayWithArray:inflightPathLayerBuffer];
 				NSMutableIndexSet * tchHandledIdxSet = [NSMutableIndexSet indexSet];
 				// we need to remove extra layers. Iterate on touch point first
 				for (touchDict in theTouches) {
 					double minDist = 9999.0;
 					NSDictionary * targetTouch = nil;
-					TouchLayer * targetLayer = nil;
-					for (TouchLayer * theLayer in dotLayerBuffer) {
+					TouchPathLayer * targetLayer = nil;
+					for (TouchPathLayer * theLayer in pathLayerBuffer) {
 						locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
 						if ( locStr ) {
 							NSPoint prevLoc = NSPointFromString(locStr);
@@ -779,13 +758,13 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 					if ( targetTouch ) {
 						[tchHandledIdxSet addIndex:idx];
 						[remainingLayers removeObject:targetLayer];
-						[self configureDistinctTouchPoint:targetTouch forLayer:targetLayer];
+						[self configureDistinctTouchPoint:targetTouch forPathLayer:targetLayer];
 					}
 					idx++;
 				}
 				// hide extra layers
-				for (shapeLayer in remainingLayers) {
-					[self hideTouchLayer:shapeLayer];
+				for (TouchPathLayer * tpLayer in remainingLayers) {
+					[self hideTouchPathLayer:tpLayer];
 				}
 				// draw touches
 				if ( [tchHandledIdxSet count] < [theTouches count] ) {
@@ -795,8 +774,10 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 						if ( [tchHandledIdxSet containsIndex:idx++] ) continue;
 						locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
 						if ( locStr ) {
-							TouchLayer * shapeLayer = [self layerForTouch:touchDict];
-							[self configureDistinctTouchPoint:touchDict forLayer:shapeLayer];
+//							TouchLayer * shapeLayer = [self layerForTouch:touchDict];
+//							[self configureDistinctTouchPoint:touchDict forLayer:shapeLayer];
+							pathLayer = [self pathLayerForTouch:touchDict];
+							[self configureDistinctTouchPoint:touchDict forPathLayer:pathLayer];
 						} else {
 							[self configureRectLayerTouch:touchDict];
 						}
@@ -806,10 +787,10 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 				NSMutableArray * remainingTouches = [NSMutableArray arrayWithArray:theTouches];
 				NSMutableIndexSet * layerHandledIdxSet = [NSMutableIndexSet indexSet];
 				// match points with layer (perform thorough check)
-				for (TouchLayer * theLayer in dotLayerBuffer) {
+				for (TouchPathLayer * theLayer in inflightPathLayerBuffer) {
 					double minDist = 9999.0;
 					NSDictionary * targetTouch = nil;
-					TouchLayer * targetLayer = nil;
+					TouchPathLayer * targetLayer = nil;
 					for (touchDict in remainingTouches) {
 						locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
 						if ( locStr ) {
@@ -826,24 +807,24 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 					if ( targetTouch ) {
 						[layerHandledIdxSet addIndex:idx];
 						[remainingTouches removeObject:targetTouch];
-						[self configureDistinctTouchPoint:targetTouch forLayer:targetLayer];
+						[self configureDistinctTouchPoint:targetTouch forPathLayer:targetLayer];
 					}
 					idx++;
 				}
 				// hide extra layers
-				if ( [layerHandledIdxSet count] < [dotLayerBuffer count] ) {
-					idx = 0;
-					for (shapeLayer in dotLayerBuffer) {
-						if ( [layerHandledIdxSet containsIndex:idx++] ) continue;
-						if ( !shapeLayer.needFadeIn ) [self hideTouchLayer:shapeLayer];
-					}
-				}
+//				if ( [layerHandledIdxSet count] < [inflightPathLayerBuffer count] ) {
+//					idx = 0;
+//					for (pathLayer in inflightPathLayerBuffer) {
+//						if ( [layerHandledIdxSet containsIndex:idx++] ) continue;
+//						if ( !pathLayer.needFadeIn ) [self hideTouchPathLayer:pathLayer];
+//					}
+//				}
 				// normal drawing
 				for (touchDict in remainingTouches) {
 					locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
 					if ( locStr ) {
-						shapeLayer = [self layerForTouch:touchDict];
-						[self configureDistinctTouchPoint:touchDict forLayer:shapeLayer];
+						pathLayer = [self pathLayerForTouch:touchDict];
+						[self configureDistinctTouchPoint:touchDict forPathLayer:pathLayer];
 					} else {
 						[self configureRectLayerTouch:touchDict];
 					}
@@ -853,23 +834,22 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 		prevIdx = idx++;
 	}
 	// just in case if there's any bug or reason that the onscreenLayerBuffer still contains some layers
-	for (TouchLayer * theLayer in dotLayerBuffer) {
-		CAKeyframeAnimation * dotFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
+	for (TouchPathLayer * theLayer in pathLayerBuffer) {
 		CAKeyframeAnimation * fadeFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
-		dotFrameAnimation.values = theLayer.pathValues;
-		dotFrameAnimation.keyTimes = theLayer.pathKeyTimes;
-		dotFrameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
-		dotFrameAnimation.duration = videoDuration;
-		dotFrameAnimation.removedOnCompletion = NO;
-		
 		fadeFrameAnimation.values = theLayer.opacityValues;
 		fadeFrameAnimation.keyTimes = theLayer.opacityKeyTimes;
 		fadeFrameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
 		fadeFrameAnimation.duration = videoDuration;
 		fadeFrameAnimation.removedOnCompletion = NO;
+		CAKeyframeAnimation * pathFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"path"];
+		pathFrameAnimation.values = theLayer.pathValues;
+		pathFrameAnimation.keyTimes = theLayer.pathKeyTimes;
+		pathFrameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
+		pathFrameAnimation.duration = videoDuration;
+		pathFrameAnimation.removedOnCompletion = NO;
 		
-		[theLayer addAnimation:fadeFrameAnimation forKey:@"fadeAnimation"];
-		[theLayer addAnimation:dotFrameAnimation forKey:@"positionAnimation"];
+		[theLayer addAnimation:fadeFrameAnimation forKey:@"pathOpacityAnimation"];
+		[theLayer addAnimation:pathFrameAnimation forKey:@"pathDrawingAnimation"];
 	}
 	for (RectLayer * theLayer in rectLayerBuffer) {
 		CAKeyframeAnimation * fadeFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];

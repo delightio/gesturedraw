@@ -11,9 +11,10 @@
 
 @interface RenderingUnitV03 : RenderingUnit {
 	__strong NSMutableArray * rectLayerBuffer;
-	__strong NSMutableArray * dotLayerBuffer;
+//	__strong NSMutableArray * dotLayerBuffer;
 	__strong NSMutableArray * dotMagnificationLayerBuffer;
 	__strong NSMutableArray * pathLayerBuffer;
+	__strong NSMutableArray * inflightPathLayerBuffer;
 	UIInterfaceOrientation majorOrientation;
 	BOOL exportFinished;
 }

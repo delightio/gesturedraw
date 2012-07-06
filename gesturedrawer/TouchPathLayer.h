@@ -18,9 +18,9 @@
 @property (nonatomic, assign) NSPoint previousLocation;
 @property (nonatomic, assign) NSTimeInterval previousTime;
 @property (nonatomic, assign) NSInteger currentSequence;
-@property (nonatomic, assign) BOOL needFadeIn;
+//@property (nonatomic, assign) BOOL needFadeIn;
 
-- (void)addPoint:(CGPoint)aPoint;
+- (void)addPathPoint:(CGPoint)aPoint atKeyFrame:(NSNumber *)fmKey;
 - (double)discrepancyWithPreviousLocation:(NSPoint)prevLoc;
 
 @end
