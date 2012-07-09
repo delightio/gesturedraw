@@ -9,7 +9,7 @@
 #import "AppDelegate.h"
 #import "TouchLayer.h"
 #import "RenderingUnitV01.h"
-#import "RenderingUnitV02.h"
+#import "RenderingUnitV03.h"
 #import <crt_externs.h>
 
 
@@ -113,7 +113,7 @@
 		
 		[rndUnit setupGestureAnimationsForLayer:syncLayer];
 	} else if ( [fmtVersion isEqualToString:@"0.2"] ) {
-		RenderingUnitV02 * v2RndUnit = [[RenderingUnitV02 alloc] initWithVideoAtPath:_videoPath destinationPath:_exportPath touchesPropertyList:_touchInfo];
+		RenderingUnitV03 * v3RndUnit = [[RenderingUnitV03 alloc] initWithVideoAtPath:_videoPath destinationPath:_exportPath touchesPropertyList:_touchInfo];
 		// load the orientation file
 		propData = nil;
 		if ( _orientationPath ) {
@@ -121,20 +121,20 @@
 		}
 		if ( propData ) {
 			NSDictionary * dict = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
-			[v2RndUnit checkMajorOrientationForTrack:[dict objectForKey:@"orientationChanges"]];
+			[v3RndUnit checkMajorOrientationForTrack:[dict objectForKey:@"orientationChanges"]];
 		}
 		// setup rendering unit
-		NSRect theRect = v2RndUnit.touchBounds;
-		v2RndUnit.videoDuration = CMTimeGetSeconds(_sourceVideoAsset.duration);
+		NSRect theRect = v3RndUnit.touchBounds;
+		v3RndUnit.videoDuration = CMTimeGetSeconds(_sourceVideoAsset.duration);
 		
 		syncLayer.sublayerTransform = CATransform3DScale(CATransform3DIdentity, vdoSize.width / theRect.size.width, vdoSize.height / theRect.size.height, 1.0);
 		[syncLayer setGeometryFlipped:YES];
 		
 		[_playbackView.layer addSublayer:syncLayer];
 		
-		[v2RndUnit setOrientationTransformForLayer:playerLayer];
+		[v3RndUnit setOrientationTransformForLayer:playerLayer];
 		
-		[v2RndUnit setupGestureAnimationsForLayer:syncLayer];
+		[v3RndUnit setupGestureAnimationsForLayer:syncLayer];
 	} else {
 		NSLog(@"wrong plist file version, expect version 0.1 or 0.2");
 		[NSApp terminate:nil];
@@ -162,7 +162,7 @@
 	if ( [fmtVersion isEqualToString:@"0.1"] ) {
 		rndUnit = [[RenderingUnitV01 alloc] initWithVideoAtPath:_videoPath destinationPath:_exportPath touchesPropertyList:_touchInfo];
 	} else if ( [fmtVersion isEqualToString:@"0.2"] ) {
-		RenderingUnitV02 * v2RndUnit = [[RenderingUnitV02 alloc] initWithVideoAtPath:_videoPath destinationPath:_exportPath touchesPropertyList:_touchInfo];
+		RenderingUnitV03 * v2RndUnit = [[RenderingUnitV03 alloc] initWithVideoAtPath:_videoPath destinationPath:_exportPath touchesPropertyList:_touchInfo];
 		NSData * propData = nil;
 		if ( _orientationPath ) {
 			propData = [NSData dataWithContentsOfFile:_orientationPath];

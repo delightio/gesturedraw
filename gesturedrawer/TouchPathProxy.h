@@ -13,6 +13,8 @@
 @property (nonatomic, strong) NSMutableArray * pathKeyTimes;
 @property (nonatomic, strong) NSMutableArray * opacityKeyTimes;
 @property (nonatomic, strong) NSMutableArray * pathValues;
+@property (nonatomic, strong) NSMutableIndexSet * pathStartSegmentIndexSet;
+@property (nonatomic, strong) NSMutableIndexSet * pathEndSegmentIndexSet;
 @property (nonatomic, assign) NSTimeInterval startTime;
 @property (nonatomic, assign) NSPoint previousLocation;
 @property (nonatomic, assign) NSTimeInterval previousTime;

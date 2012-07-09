@@ -106,17 +106,6 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	}];
 }
 
-- (void)setLayer:(TouchPathProxy *)shapeLayer fadeIn:(BOOL)aflag atTime:(NSTimeInterval)curTimeItval location:(NSPoint)curLoc {
-	shapeLayer.startTime = curTimeItval;
-	// fade in effect
-	NSNumber * touchTime = [NSNumber numberWithDouble:curTimeItval/videoDuration];
-	// effect end time
-	[shapeLayer.opacityKeyTimes addObject:touchTime];
-	// make sure the dot is "in" the location when animation starts
-	[shapeLayer.pathKeyTimes addObject:touchTime];
-	[shapeLayer.pathValues addObject:[NSValue valueWithPoint:curLoc]];
-}
-
 - (double)distanceOfPoint:(NSPoint)aPoint toRect:(NSRect)aRect {
 	NSPoint rectMidPoint = NSMakePoint(aRect.origin.x + aRect.size.width / 2.0, aRect.origin.y + aRect.size.height / 2.0);
 	double xDist = aPoint.x - rectMidPoint.x;
@@ -261,6 +250,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	[shapeLayer.pathKeyTimes addObject:touchTime];
 	[shapeLayer.pathValues addObject:[NSValue valueWithPoint:shapeLayer.previousLocation]];
 	shapeLayer.needFadeIn = YES;
+	[shapeLayer.pathEndSegmentIndexSet addIndex:[shapeLayer.pathKeyTimes count] - 1];
 }
 
 - (void)configureRectLayerTouch:(NSDictionary *)touchDict {
@@ -316,9 +306,6 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 			// make sure the rect is shown when it starts to fade in
 			[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
 			[shapeLayer.pathValues addObject:curFrameVal];
-			// move the rect
-//			[shapeLayer.pathKeyTimes addObject:touchTime];
-//			[shapeLayer.pathValues addObject:curFrameVal];
 			// make sure the dot is "in" the location when animation starts
 			shapeLayer.needFadeIn = NO;
 		}
@@ -339,9 +326,6 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 			[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
 			[shapeLayer.opacityValues addObject:oneNum];		// start value
 			[shapeLayer.opacityValues addObject:zeroNum];		// end value
-			// move the rect
-//			[shapeLayer.pathKeyTimes addObject:touchTime];
-//			[shapeLayer.pathValues addObject:curFrameVal];
 			// keep rect stationary for fade out effect
 			[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
 			[shapeLayer.pathValues addObject:curFrameVal];
@@ -368,7 +352,6 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	UITouchPhase ttype = [[touchDict objectForKey:DLTouchPhaseKey] integerValue];
 	NSPoint curPoint = NSPointFromString([touchDict objectForKey:DLTouchCurrentLocationKey]);
 	NSValue * curPointVal = [NSValue valueWithPoint:curPoint];
-	NSNumber * fadeTimeNum;
 	// do things normal
 	if ( ttype == UITouchPhaseBegan || pathProxy.needFadeIn ) {
 		pathProxy.needFadeIn = NO;
@@ -377,12 +360,9 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 		// effect end time
 		[pathProxy.opacityKeyTimes addObject:touchTime];
 		// make sure the dot is "in" the location when animation starts
-		[pathProxy.pathKeyTimes addObject:fadeTimeNum];
-		[pathProxy.pathValues addObject:curPointVal];
-		// set paths
 		[pathProxy.pathKeyTimes addObject:touchTime];
-		// position of layer at time
 		[pathProxy.pathValues addObject:curPointVal];
+		[pathProxy.pathStartSegmentIndexSet addIndex:[pathProxy.pathKeyTimes count] - 1];
 	} else if ( ttype == UITouchPhaseCancelled || ttype == UITouchPhaseEnded ) {
 		if ( curTimeItval - pathProxy.startTime < DL_MINIMUM_DURATION ) {
 			// we need to show the dot for longer time so that it's visually visible
@@ -396,9 +376,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 		[pathProxy.pathKeyTimes addObject:touchTime];
 		// position of layer at time
 		[pathProxy.pathValues addObject:curPointVal];
-		// make sure the dot is not moving till animation is done
-		[pathProxy.pathKeyTimes addObject:fadeTimeNum];
-		[pathProxy.pathValues addObject:curPointVal];
+		[pathProxy.pathEndSegmentIndexSet addIndex:[pathProxy.pathKeyTimes count] - 1];
 	} else {
 		// set paths
 		[pathProxy.pathKeyTimes addObject:touchTime];

@@ -11,6 +11,8 @@
 @implementation TouchPathProxy
 @synthesize pathKeyTimes = _pathKeyTimes;
 @synthesize opacityKeyTimes = _opacityKeyTimes;
+@synthesize pathStartSegmentIndexSet = _pathStartSegmentIndexSet;
+@synthesize pathEndSegmentIndexSet = _pathEndSegmentIndexSet;
 @synthesize pathValues = _pathValues;
 @synthesize startTime = _startTime;
 @synthesize previousLocation = _previousLocation;
@@ -26,6 +28,8 @@
 	_opacityKeyTimes = [[NSMutableArray alloc] initWithCapacity:10];
 	_pathValues = [[NSMutableArray alloc] initWithCapacity:10];
 	_previousLocation = NSMakePoint(-9999.0, -9999.0);
+	_pathStartSegmentIndexSet = [[NSMutableIndexSet alloc] init];
+	_pathEndSegmentIndexSet = [[NSMutableIndexSet alloc] init];
 
 	return self;
 }
