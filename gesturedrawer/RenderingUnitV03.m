@@ -9,6 +9,8 @@
 #import "TouchPathProxy.h"
 #import "RectLayer.h"
 #import "RenderingUnitV03.h"
+#import "LineRectLayer.h"
+#import "TouchLayer.h"
 
 #define DL_MINIMUM_DURATION 0.15
 #define DL_NORMAL_OPACITY_ANIMATION_DURATION 0.1
@@ -282,7 +284,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 		shapeLayer.frame = tFrame;
 		[self.parentLayer addSublayer:shapeLayer];
 	}
-	UITouchPhase ttype = [[touchDict objectForKey:DLTouchPhaseKey] integerValue];
+	UITouchPhase ttype = (UITouchPhase)[[touchDict objectForKey:DLTouchPhaseKey] integerValue];
 	NSNumber * fadeTimeNum;
 	NSNumber * zeroNum = (NSNumber *)kCFBooleanFalse;
 	NSNumber * oneNum = (NSNumber *)kCFBooleanTrue;
@@ -349,7 +351,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	NSTimeInterval curTimeItval = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
 	NSNumber * touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
 	// fade in/out of dot
-	UITouchPhase ttype = [[touchDict objectForKey:DLTouchPhaseKey] integerValue];
+	UITouchPhase ttype = (UITouchPhase)[[touchDict objectForKey:DLTouchPhaseKey] integerValue];
 	NSPoint curPoint = NSPointFromString([touchDict objectForKey:DLTouchCurrentLocationKey]);
 	NSValue * curPointVal = [NSValue valueWithPoint:curPoint];
 	// do things normal
@@ -481,7 +483,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	NSString * locStr = nil;
 	idx = 0;
 	NSInteger prevIdx = 0;
-	TouchPathProxy * shapeLayer = nil;
+	TouchPathProxy * proxyLayer = nil;
 	for (id item in groupArray) {
 		NSArray * theTouches = item;
 		curSeqNum = 0;
@@ -495,8 +497,8 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 				locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
 				if ( locStr ) {
 					// this is a touch point, perform the normal logic
-					shapeLayer = [self touchProxyForTouch:touchDict];
-					[self configureDistinctTouchPoint:touchDict forLayer:shapeLayer];
+					proxyLayer = [self touchProxyForTouch:touchDict];
+					[self configureDistinctTouchPoint:touchDict forLayer:proxyLayer];
 				} else {
 					// this is a rect
 					[self configureRectLayerTouch:touchDict];
@@ -548,8 +550,8 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 					idx++;
 				}
 				// hide extra layers
-				for (shapeLayer in remainingLayers) {
-					[self hideTouchPathProxy:shapeLayer];
+				for (proxyLayer in remainingLayers) {
+					[self hideTouchPathProxy:proxyLayer];
 				}
 				// draw touches
 				if ( [tchHandledIdxSet count] < [theTouches count] ) {
@@ -597,17 +599,17 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 				// hide extra layers
 				if ( [layerHandledIdxSet count] < [dotPositionBuffer count] ) {
 					idx = 0;
-					for (shapeLayer in dotPositionBuffer) {
+					for (proxyLayer in dotPositionBuffer) {
 						if ( [layerHandledIdxSet containsIndex:idx++] ) continue;
-						if ( !shapeLayer.needFadeIn ) [self hideTouchPathProxy:shapeLayer];
+						if ( !proxyLayer.needFadeIn ) [self hideTouchPathProxy:proxyLayer];
 					}
 				}
 				// normal drawing
 				for (touchDict in remainingTouches) {
 					locStr = [touchDict objectForKey:DLTouchCurrentLocationKey];
 					if ( locStr ) {
-						shapeLayer = [self touchProxyForTouch:touchDict];
-						[self configureDistinctTouchPoint:touchDict forLayer:shapeLayer];
+						proxyLayer = [self touchProxyForTouch:touchDict];
+						[self configureDistinctTouchPoint:touchDict forLayer:proxyLayer];
 					} else {
 						[self configureRectLayerTouch:touchDict];
 					}
@@ -617,19 +619,58 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 		prevIdx = idx++;
 	}
 	// just in case if there's any bug or reason that the onscreenLayerBuffer still contains some layers
-	for (TouchPathProxy * theLayer in dotPositionBuffer) {
+	for (TouchPathProxy * proxyObj in dotPositionBuffer) {
 		// create the layer object
-
+		NSMutableIndexSet * idxSet = proxyObj.pathStartSegmentIndexSet;
+		[idxSet enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop) {
+			[proxyObj.pathKeyTimes objectAtIndex:idx];
+			[[proxyObj.pathValues objectAtIndex:idx] pointValue];
+		}];
+		// transverse all paths
+		NSArray * pathAy = proxyObj.pathValues;
+		[pathAy enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+			CGPoint curPoint = NSPointToCGPoint([obj pointValue]);
+			NSNumber * keyTimeNum = [proxyObj.pathKeyTimes objectAtIndex:idx];
+			NSTimeInterval curTime = [keyTimeNum doubleValue] * videoDuration;
+			if ( [proxyObj.pathStartSegmentIndexSet containsIndex:idx] ) {
+				// this is the starting path. create the ripple
+				TouchLayer * magLayer = [TouchLayer layer];
+				magLayer.position = curPoint;
+				[prnLayer addSublayer:magLayer];
+				// show the dot should start magnifying when the dot has appeared
+				CAAnimationGroup * animGroup = [CAAnimationGroup animation];
+				CABasicAnimation * opacAnim = [CABasicAnimation animationWithKeyPath:@"opacity"];
+				opacAnim.fromValue = (NSNumber *)kCFBooleanTrue;
+				opacAnim.toValue = (NSNumber *)kCFBooleanFalse;
+				CABasicAnimation * sizeAnim = [CABasicAnimation animationWithKeyPath:@"transform"];
+				sizeAnim.fromValue = [NSValue valueWithCATransform3D:CATransform3DIdentity];
+				sizeAnim.toValue = [NSValue valueWithCATransform3D:CATransform3DMakeScale(4.0, 4.0, 1.0)];
+				[animGroup setAnimations:[NSArray arrayWithObjects:opacAnim, sizeAnim, nil]];
+				animGroup.duration = 0.75;
+				animGroup.beginTime = curTime;
+				animGroup.removedOnCompletion = NO;
+				[magLayer addAnimation:animGroup forKey:nil];
+			} else if ( [proxyObj.pathEndSegmentIndexSet containsIndex:idx] ) {
+				// this is the end-point, creates path, do not create new line segment
+				// check if the previous point is the beginning point. If so, no need to do anything.
+				if ( ![proxyObj.pathStartSegmentIndexSet containsIndex:idx -1] ) {
+					
+				}
+			} else {
+				// points in the middle
+				
+			}
+		}];
 		CAKeyframeAnimation * dotFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
 		CAKeyframeAnimation * fadeFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
-		dotFrameAnimation.values = theLayer.pathValues;
-		dotFrameAnimation.keyTimes = theLayer.pathKeyTimes;
+		dotFrameAnimation.values = proxyObj.pathValues;
+		dotFrameAnimation.keyTimes = proxyObj.pathKeyTimes;
 		dotFrameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
 		dotFrameAnimation.duration = videoDuration;
 		dotFrameAnimation.removedOnCompletion = NO;
 		
 //		fadeFrameAnimation.values = theLayer.opacityValues;
-		fadeFrameAnimation.keyTimes = theLayer.opacityKeyTimes;
+		fadeFrameAnimation.keyTimes = proxyObj.opacityKeyTimes;
 		fadeFrameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
 		fadeFrameAnimation.duration = videoDuration;
 		fadeFrameAnimation.removedOnCompletion = NO;
@@ -665,7 +706,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 		majorOrientation = UIInterfaceOrientationPortrait;
 	} else if ( c == 1 ) {
 		oriDict = [track lastObject];
-		majorOrientation = [[oriDict objectForKey:DLInterfaceOrientationKey] integerValue];
+		majorOrientation = (UIInterfaceOrientation)[[oriDict objectForKey:DLInterfaceOrientationKey] integerValue];
 	} else {
 		NSDictionary * prevOriDict;
 		prevOriDict = [track objectAtIndex:0];
@@ -698,7 +739,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 			}
 		}
 		// this is the major orientation
-		majorOrientation = [oriNum integerValue];
+		majorOrientation = (UIInterfaceOrientation)[oriNum integerValue];
 	}
 }
 
