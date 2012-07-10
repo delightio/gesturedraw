@@ -701,6 +701,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 					}
 					[gestureLayer addSublayer:lineLayer];
 				}
+				idx++;
 			}
 		}
 	}
