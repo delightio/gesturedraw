@@ -152,6 +152,7 @@ int main(int argc, char * argv[])
 			NSLog(@"majororientation: can't open file at: %@", oriFilePath);
 		}
 	}
+    printf("{\"rotation\":%d}", c);
     return c;
 }
 
