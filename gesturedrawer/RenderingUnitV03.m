@@ -618,6 +618,8 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	}
 	// just in case if there's any bug or reason that the onscreenLayerBuffer still contains some layers
 	for (TouchPathProxy * theLayer in dotPositionBuffer) {
+		// create the layer object
+
 		CAKeyframeAnimation * dotFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
 		CAKeyframeAnimation * fadeFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
 		dotFrameAnimation.values = theLayer.pathValues;

@@ -25,6 +25,10 @@
 		A932E70F15AB3E840087FEFC /* RenderingUnitV03.m in Sources */ = {isa = PBXBuildFile; fileRef = A932E70D15AB3E840087FEFC /* RenderingUnitV03.m */; };
 		A932E71315AB410D0087FEFC /* TouchPathProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = A932E71215AB410D0087FEFC /* TouchPathProxy.m */; };
 		A932E71415AB410D0087FEFC /* TouchPathProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = A932E71215AB410D0087FEFC /* TouchPathProxy.m */; };
+		A932E71715AB6F000087FEFC /* LineRectLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A932E71615AB6F000087FEFC /* LineRectLayer.m */; };
+		A932E71815AB6F000087FEFC /* LineRectLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A932E71615AB6F000087FEFC /* LineRectLayer.m */; };
+		A932E71B15AB6F260087FEFC /* TouchPathLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A932E71A15AB6F260087FEFC /* TouchPathLayer.m */; };
+		A932E71C15AB6F260087FEFC /* TouchPathLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A932E71A15AB6F260087FEFC /* TouchPathLayer.m */; };
 		A93E65411575959C00AA1F20 /* RenderingUnitV02.m in Sources */ = {isa = PBXBuildFile; fileRef = A93E65401575959C00AA1F20 /* RenderingUnitV02.m */; };
 		A93E65421575959C00AA1F20 /* RenderingUnitV02.m in Sources */ = {isa = PBXBuildFile; fileRef = A93E65401575959C00AA1F20 /* RenderingUnitV02.m */; };
 		A93E65431575959C00AA1F20 /* RenderingUnitV02.m in Sources */ = {isa = PBXBuildFile; fileRef = A93E65401575959C00AA1F20 /* RenderingUnitV02.m */; };
@@ -109,6 +113,10 @@
 		A932E70D15AB3E840087FEFC /* RenderingUnitV03.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderingUnitV03.m; sourceTree = "<group>"; };
 		A932E71115AB410D0087FEFC /* TouchPathProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TouchPathProxy.h; sourceTree = "<group>"; };
 		A932E71215AB410D0087FEFC /* TouchPathProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TouchPathProxy.m; sourceTree = "<group>"; };
+		A932E71515AB6F000087FEFC /* LineRectLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LineRectLayer.h; sourceTree = "<group>"; };
+		A932E71615AB6F000087FEFC /* LineRectLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LineRectLayer.m; sourceTree = "<group>"; };
+		A932E71915AB6F260087FEFC /* TouchPathLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TouchPathLayer.h; sourceTree = "<group>"; };
+		A932E71A15AB6F260087FEFC /* TouchPathLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TouchPathLayer.m; sourceTree = "<group>"; };
 		A93E653F1575959C00AA1F20 /* RenderingUnitV02.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderingUnitV02.h; sourceTree = "<group>"; };
 		A93E65401575959C00AA1F20 /* RenderingUnitV02.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderingUnitV02.m; sourceTree = "<group>"; };
 		A93E6545157595BD00AA1F20 /* RenderingUnitV01.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderingUnitV01.h; sourceTree = "<group>"; };
@@ -304,6 +312,10 @@
 				A96D6AEF157802E000AEC72C /* RectLayer.m */,
 				A932E71115AB410D0087FEFC /* TouchPathProxy.h */,
 				A932E71215AB410D0087FEFC /* TouchPathProxy.m */,
+				A932E71515AB6F000087FEFC /* LineRectLayer.h */,
+				A932E71615AB6F000087FEFC /* LineRectLayer.m */,
+				A932E71915AB6F260087FEFC /* TouchPathLayer.h */,
+				A932E71A15AB6F260087FEFC /* TouchPathLayer.m */,
 			);
 			path = gesturedrawer;
 			sourceTree = "<group>";
@@ -510,6 +522,8 @@
 				A96D6AF0157802E000AEC72C /* RectLayer.m in Sources */,
 				A932E70E15AB3E840087FEFC /* RenderingUnitV03.m in Sources */,
 				A932E71315AB410D0087FEFC /* TouchPathProxy.m in Sources */,
+				A932E71715AB6F000087FEFC /* LineRectLayer.m in Sources */,
+				A932E71B15AB6F260087FEFC /* TouchPathLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -526,6 +540,8 @@
 				A96D6AF2157802EA00AEC72C /* RectLayer.m in Sources */,
 				A932E70F15AB3E840087FEFC /* RenderingUnitV03.m in Sources */,
 				A932E71415AB410D0087FEFC /* TouchPathProxy.m in Sources */,
+				A932E71815AB6F000087FEFC /* LineRectLayer.m in Sources */,
+				A932E71C15AB6F260087FEFC /* TouchPathLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
