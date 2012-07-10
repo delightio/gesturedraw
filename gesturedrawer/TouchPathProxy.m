@@ -9,8 +9,7 @@
 #import "TouchPathProxy.h"
 
 @implementation TouchPathProxy
-@synthesize pathKeyTimes = _pathKeyTimes;
-@synthesize opacityKeyTimes = _opacityKeyTimes;
+@synthesize pathTimes = _pathTimes;
 @synthesize pathStartSegmentIndexSet = _pathStartSegmentIndexSet;
 @synthesize pathEndSegmentIndexSet = _pathEndSegmentIndexSet;
 @synthesize pathValues = _pathValues;
@@ -24,8 +23,7 @@
 	self = [super init];
 	
 	_needFadeIn = YES;
-	_pathKeyTimes = [[NSMutableArray alloc] initWithCapacity:10];
-	_opacityKeyTimes = [[NSMutableArray alloc] initWithCapacity:10];
+	_pathTimes = [[NSMutableArray alloc] initWithCapacity:10];
 	_pathValues = [[NSMutableArray alloc] initWithCapacity:10];
 	_previousLocation = NSMakePoint(-9999.0, -9999.0);
 	_pathStartSegmentIndexSet = [[NSMutableIndexSet alloc] init];

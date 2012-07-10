@@ -10,4 +10,8 @@
 
 @interface LineRectLayer : CALayer
 
++ (id)layerAtPosition:(CGPoint)aPoint;
+
+- (CGRect)getBoundsAndSetTransformationToPoint:(CGPoint)aPoint;
+
 @end

@@ -245,14 +245,12 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 - (void)hideTouchPathProxy:(TouchPathProxy *)shapeLayer {
 	NSTimeInterval curTimeItval = shapeLayer.previousTime;
 	// fade out effect
-	NSNumber * touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
-	// effect start time
-	[shapeLayer.opacityKeyTimes addObject:touchTime];
+	NSNumber * touchTime = [NSNumber numberWithDouble:curTimeItval];
 	// make sure the dot is not moving till animation is done
-	[shapeLayer.pathKeyTimes addObject:touchTime];
+	[shapeLayer.pathTimes addObject:touchTime];
 	[shapeLayer.pathValues addObject:[NSValue valueWithPoint:shapeLayer.previousLocation]];
 	shapeLayer.needFadeIn = YES;
-	[shapeLayer.pathEndSegmentIndexSet addIndex:[shapeLayer.pathKeyTimes count] - 1];
+	[shapeLayer.pathEndSegmentIndexSet addIndex:[shapeLayer.pathTimes count] - 1];
 }
 
 - (void)configureRectLayerTouch:(NSDictionary *)touchDict {
@@ -349,7 +347,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	// setup the layer's position at time
 	// time
 	NSTimeInterval curTimeItval = [[touchDict objectForKey:DLTouchTimeKey] doubleValue];
-	NSNumber * touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
+	NSNumber * touchTime = [NSNumber numberWithDouble:curTimeItval];
 	// fade in/out of dot
 	UITouchPhase ttype = (UITouchPhase)[[touchDict objectForKey:DLTouchPhaseKey] integerValue];
 	NSPoint curPoint = NSPointFromString([touchDict objectForKey:DLTouchCurrentLocationKey]);
@@ -359,29 +357,26 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 		pathProxy.needFadeIn = NO;
 		pathProxy.startTime = curTimeItval;
 		// fade in effect
-		// effect end time
-		[pathProxy.opacityKeyTimes addObject:touchTime];
 		// make sure the dot is "in" the location when animation starts
-		[pathProxy.pathKeyTimes addObject:touchTime];
+		[pathProxy.pathTimes addObject:touchTime];
 		[pathProxy.pathValues addObject:curPointVal];
-		[pathProxy.pathStartSegmentIndexSet addIndex:[pathProxy.pathKeyTimes count] - 1];
+		// save the index value
+		[pathProxy.pathStartSegmentIndexSet addIndex:[pathProxy.pathTimes count] - 1];
 	} else if ( ttype == UITouchPhaseCancelled || ttype == UITouchPhaseEnded ) {
-		if ( curTimeItval - pathProxy.startTime < DL_MINIMUM_DURATION ) {
-			// we need to show the dot for longer time so that it's visually visible
-			curTimeItval = pathProxy.startTime + DL_MINIMUM_DURATION;
-			touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
-		}
+//		if ( curTimeItval - pathProxy.startTime < DL_MINIMUM_DURATION ) {
+//			// we need to show the dot for longer time so that it's visually visible
+//			curTimeItval = pathProxy.startTime + DL_MINIMUM_DURATION;
+//			touchTime = [NSNumber numberWithDouble:curTimeItval];
+//		}
 		// fade out effect
-		// effect start time
-		[pathProxy.opacityKeyTimes addObject:touchTime];
 		// set paths
-		[pathProxy.pathKeyTimes addObject:touchTime];
+		[pathProxy.pathTimes addObject:touchTime];
 		// position of layer at time
 		[pathProxy.pathValues addObject:curPointVal];
-		[pathProxy.pathEndSegmentIndexSet addIndex:[pathProxy.pathKeyTimes count] - 1];
+		[pathProxy.pathEndSegmentIndexSet addIndex:[pathProxy.pathTimes count] - 1];
 	} else {
 		// set paths
-		[pathProxy.pathKeyTimes addObject:touchTime];
+		[pathProxy.pathTimes addObject:touchTime];
 		// position of layer at time
 		[pathProxy.pathValues addObject:curPointVal];
 	}
@@ -618,65 +613,96 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 		}
 		prevIdx = idx++;
 	}
+	NSNumber * zeroNum = (__bridge NSNumber *)kCFBooleanFalse;
+	NSNumber * oneNum = (__bridge NSNumber *)kCFBooleanTrue;
 	// just in case if there's any bug or reason that the onscreenLayerBuffer still contains some layers
-	for (TouchPathProxy * proxyObj in dotPositionBuffer) {
-		// create the layer object
-		NSMutableIndexSet * idxSet = proxyObj.pathStartSegmentIndexSet;
-		[idxSet enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop) {
-			[proxyObj.pathKeyTimes objectAtIndex:idx];
-			[[proxyObj.pathValues objectAtIndex:idx] pointValue];
-		}];
-		// transverse all paths
-		NSArray * pathAy = proxyObj.pathValues;
-		[pathAy enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-			CGPoint curPoint = NSPointToCGPoint([obj pointValue]);
-			NSNumber * keyTimeNum = [proxyObj.pathKeyTimes objectAtIndex:idx];
-			NSTimeInterval curTime = [keyTimeNum doubleValue] * videoDuration;
-			if ( [proxyObj.pathStartSegmentIndexSet containsIndex:idx] ) {
-				// this is the starting path. create the ripple
-				TouchLayer * magLayer = [TouchLayer layer];
-				magLayer.position = curPoint;
-				[prnLayer addSublayer:magLayer];
-				// show the dot should start magnifying when the dot has appeared
-				CAAnimationGroup * animGroup = [CAAnimationGroup animation];
-				CABasicAnimation * opacAnim = [CABasicAnimation animationWithKeyPath:@"opacity"];
-				opacAnim.fromValue = (NSNumber *)kCFBooleanTrue;
-				opacAnim.toValue = (NSNumber *)kCFBooleanFalse;
-				CABasicAnimation * sizeAnim = [CABasicAnimation animationWithKeyPath:@"transform"];
-				sizeAnim.fromValue = [NSValue valueWithCATransform3D:CATransform3DIdentity];
-				sizeAnim.toValue = [NSValue valueWithCATransform3D:CATransform3DMakeScale(4.0, 4.0, 1.0)];
-				[animGroup setAnimations:[NSArray arrayWithObjects:opacAnim, sizeAnim, nil]];
-				animGroup.duration = 0.75;
-				animGroup.beginTime = curTime;
-				animGroup.removedOnCompletion = NO;
-				[magLayer addAnimation:animGroup forKey:nil];
-			} else if ( [proxyObj.pathEndSegmentIndexSet containsIndex:idx] ) {
-				// this is the end-point, creates path, do not create new line segment
-				// check if the previous point is the beginning point. If so, no need to do anything.
-				if ( ![proxyObj.pathStartSegmentIndexSet containsIndex:idx -1] ) {
+	@autoreleasepool {
+		for (TouchPathProxy * proxyObj in dotPositionBuffer) {
+			// transverse all paths
+			NSArray * pathAy = proxyObj.pathValues;
+			BOOL needCreateContainerLayer = NO;
+			CALayer * gestureLayer = nil;
+			NSNumber * startKeyTimeNum;
+			idx = 0;
+			for (NSValue * pointVal in pathAy) {
+				CGPoint curPoint = NSPointToCGPoint([pointVal pointValue]);
+				NSNumber * keyTimeNum = [proxyObj.pathTimes objectAtIndex:idx];
+				NSTimeInterval curTime = [keyTimeNum doubleValue];
+				if ( [proxyObj.pathStartSegmentIndexSet containsIndex:idx] ) {
+					// this is the starting path. create the ripple
+					TouchLayer * magLayer = [TouchLayer layer];
+					magLayer.position = curPoint;
+					// show the dot should start magnifying when the dot has appeared
+					CAAnimationGroup * animGroup = [CAAnimationGroup animation];
+					CABasicAnimation * opacAnim = [CABasicAnimation animationWithKeyPath:@"opacity"];
+					opacAnim.fromValue = (NSNumber *)kCFBooleanTrue;
+					opacAnim.toValue = (NSNumber *)kCFBooleanFalse;
+					CABasicAnimation * sizeAnim = [CABasicAnimation animationWithKeyPath:@"transform"];
+					sizeAnim.fromValue = [NSValue valueWithCATransform3D:CATransform3DIdentity];
+					sizeAnim.toValue = [NSValue valueWithCATransform3D:CATransform3DMakeScale(4.0, 4.0, 1.0)];
+					[animGroup setAnimations:[NSArray arrayWithObjects:opacAnim, sizeAnim, nil]];
+					animGroup.duration = 0.75;
+					animGroup.beginTime = curTime;
+					animGroup.removedOnCompletion = NO;
+					[magLayer addAnimation:animGroup forKey:nil];
+					[prnLayer addSublayer:magLayer];
 					
+					startKeyTimeNum = keyTimeNum;
+					needCreateContainerLayer = YES;
+				} else if ( [proxyObj.pathEndSegmentIndexSet containsIndex:idx] ) {
+					// this is the end-point, creates path, do not create new line segment
+					// check if the previous point is the beginning point. If so, no need to do anything.
+					if ( ![proxyObj.pathStartSegmentIndexSet containsIndex:idx -1] ) {
+						// we need to create new segment
+						CGPoint lastPosition = NSPointToCGPoint([[pathAy objectAtIndex:idx - 1] pointValue]);
+						LineRectLayer * lineLayer = [LineRectLayer layerAtPosition:lastPosition];
+						CGRect theBounds = [lineLayer getBoundsAndSetTransformationToPoint:curPoint];
+						CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"bounds"];
+						animation.toValue = [NSValue valueWithRect:NSRectFromCGRect(theBounds)];
+						animation.fromValue = [NSValue valueWithRect:NSRectFromCGRect(lineLayer.bounds)];
+						NSTimeInterval prevTime = [[proxyObj.pathTimes objectAtIndex:idx - 1] doubleValue];
+						animation.beginTime = prevTime;
+						animation.duration = curTime - prevTime;
+						animation.removedOnCompletion = NO;
+						animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+						[lineLayer addAnimation:animation forKey:nil];
+						[gestureLayer addSublayer:lineLayer];
+						// path has been added, we need to fade out the layer
+						CAKeyframeAnimation * opacAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
+						opacAnimation.keyTimes = [NSArray arrayWithObjects:[NSNumber numberWithDouble:([startKeyTimeNum doubleValue] - DL_MINIMUM_DURATION) / videoDuration], [NSNumber numberWithDouble:[startKeyTimeNum doubleValue] / videoDuration], [NSNumber numberWithDouble:[keyTimeNum doubleValue] / videoDuration], [NSNumber numberWithDouble:([keyTimeNum doubleValue] + DL_MINIMUM_DURATION) / videoDuration], nil];
+						opacAnimation.values = [NSArray arrayWithObjects:zeroNum, oneNum, oneNum, zeroNum, nil];
+						opacAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
+						opacAnimation.removedOnCompletion = NO;
+						
+						[gestureLayer addAnimation:opacAnimation forKey:nil];
+					}
+				} else {
+					// points in the middle, create new segment
+					// we need to create new segment
+					CGPoint lastPosition = NSPointToCGPoint([[pathAy objectAtIndex:idx - 1] pointValue]);
+					LineRectLayer * lineLayer = [LineRectLayer layerAtPosition:lastPosition];
+					CGRect theBounds = [lineLayer getBoundsAndSetTransformationToPoint:curPoint];
+					CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"bounds"];
+					animation.toValue = [NSValue valueWithRect:NSRectFromCGRect(theBounds)];
+					animation.fromValue = [NSValue valueWithRect:NSRectFromCGRect(lineLayer.bounds)];
+					NSTimeInterval prevTime = [[proxyObj.pathTimes objectAtIndex:idx - 1] doubleValue];
+					animation.beginTime = prevTime;
+					animation.duration = curTime - prevTime;
+					animation.removedOnCompletion = NO;
+					animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+					[lineLayer addAnimation:animation forKey:nil];
+					
+					if ( needCreateContainerLayer ) {
+						gestureLayer = [CALayer layer];
+						gestureLayer.opacity = 0.0;
+						
+						[prnLayer addSublayer:gestureLayer];
+						needCreateContainerLayer = NO;
+					}
+					[gestureLayer addSublayer:lineLayer];
 				}
-			} else {
-				// points in the middle
-				
 			}
-		}];
-		CAKeyframeAnimation * dotFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
-		CAKeyframeAnimation * fadeFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
-		dotFrameAnimation.values = proxyObj.pathValues;
-		dotFrameAnimation.keyTimes = proxyObj.pathKeyTimes;
-		dotFrameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
-		dotFrameAnimation.duration = videoDuration;
-		dotFrameAnimation.removedOnCompletion = NO;
-		
-//		fadeFrameAnimation.values = theLayer.opacityValues;
-		fadeFrameAnimation.keyTimes = proxyObj.opacityKeyTimes;
-		fadeFrameAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
-		fadeFrameAnimation.duration = videoDuration;
-		fadeFrameAnimation.removedOnCompletion = NO;
-		
-//		[theLayer addAnimation:fadeFrameAnimation forKey:@"fadeAnimation"];
-//		[theLayer addAnimation:dotFrameAnimation forKey:@"positionAnimation"];
+		}
 	}
 	for (RectLayer * theLayer in rectLayerBuffer) {
 		CAKeyframeAnimation * fadeFrameAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];

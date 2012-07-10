@@ -14,7 +14,7 @@
 	LineRectLayer * theLayer = [[LineRectLayer alloc] init];
 	
 	theLayer.position = aPoint;
-	theLayer.anchorPoint = aPoint;
+	theLayer.anchorPoint = CGPointMake(0.0, 0.5);
 	
 	return theLayer;
 }
@@ -30,6 +30,22 @@
 	self.bounds = CGRectMake(0.0, 0.0, 14.0, 14.0);
 	
 	return self;
+}
+
+- (CGRect)getBoundsAndSetTransformationToPoint:(CGPoint)aPoint {
+	CGRect theBounds = self.bounds;
+	// set rotation
+	CGPoint curPosition = self.position;
+	CGPoint abVec = CGPointMake(aPoint.x - curPosition.x, aPoint.y - curPosition.y);
+	double rotationAng = 0.0;
+	if ( abVec.x == 0.0 ) {
+		rotationAng = abVec.y > 0.0 ? 0.0 : M_PI;
+	} else {
+		rotationAng = atan(abVec.y / abVec.x);
+	}
+	self.transform = CATransform3DMakeRotation(rotationAng, 0.0, 0.0, 1.0);
+	theBounds.size.width = sqrt( abVec.x * abVec.x + abVec.y * abVec.y );
+	return theBounds;
 }
 
 @end
