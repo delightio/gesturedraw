@@ -652,7 +652,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 				} else if ( [proxyObj.pathEndSegmentIndexSet containsIndex:idx] ) {
 					// this is the end-point, creates path, do not create new line segment
 					// check if the previous point is the beginning point. If so, no need to do anything.
-					if ( ![proxyObj.pathStartSegmentIndexSet containsIndex:idx -1] ) {
+					if ( ![proxyObj.pathStartSegmentIndexSet containsIndex:idx - 1] ) {
 						// we need to create new segment
 						CGPoint lastPosition = NSPointToCGPoint([[pathAy objectAtIndex:idx - 1] pointValue]);
 						LineRectLayer * lineLayer = [LineRectLayer layerAtPosition:lastPosition];
@@ -664,6 +664,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 						animation.beginTime = prevTime;
 						animation.duration = curTime - prevTime;
 						animation.removedOnCompletion = NO;
+						animation.fillMode = kCAFillModeForwards;
 						animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
 						[lineLayer addAnimation:animation forKey:nil];
 						[gestureLayer addSublayer:lineLayer];
@@ -672,9 +673,12 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 						opacAnimation.keyTimes = [NSArray arrayWithObjects:[NSNumber numberWithDouble:([startKeyTimeNum doubleValue] - DL_MINIMUM_DURATION) / videoDuration], [NSNumber numberWithDouble:[startKeyTimeNum doubleValue] / videoDuration], [NSNumber numberWithDouble:[keyTimeNum doubleValue] / videoDuration], [NSNumber numberWithDouble:([keyTimeNum doubleValue] + DL_MINIMUM_DURATION) / videoDuration], nil];
 						opacAnimation.values = [NSArray arrayWithObjects:zeroNum, oneNum, oneNum, zeroNum, nil];
 						opacAnimation.beginTime = AVCoreAnimationBeginTimeAtZero;
+						opacAnimation.duration = videoDuration;
 						opacAnimation.removedOnCompletion = NO;
 						
 						[gestureLayer addAnimation:opacAnimation forKey:nil];
+						gestureLayer = nil;
+//						[prnLayer addSublayer:lineLayer];
 					}
 				} else {
 					// points in the middle, create new segment
@@ -689,6 +693,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 					animation.beginTime = prevTime;
 					animation.duration = curTime - prevTime;
 					animation.removedOnCompletion = NO;
+					animation.fillMode = kCAFillModeForwards;
 					animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
 					[lineLayer addAnimation:animation forKey:nil];
 					
@@ -700,6 +705,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 						needCreateContainerLayer = NO;
 					}
 					[gestureLayer addSublayer:lineLayer];
+//					[prnLayer addSublayer:lineLayer];
 				}
 				idx++;
 			}

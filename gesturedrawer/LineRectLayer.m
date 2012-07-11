@@ -26,8 +26,8 @@
 	self.backgroundColor = theColor;
 	CGColorRelease(theColor);
 	
-	self.cornerRadius = 7.0;
-	self.bounds = CGRectMake(0.0, 0.0, 14.0, 14.0);
+//	self.cornerRadius = 7.0;
+	self.bounds = CGRectMake(0.0, 0.0, 0.0, 14.0);
 	
 	return self;
 }
