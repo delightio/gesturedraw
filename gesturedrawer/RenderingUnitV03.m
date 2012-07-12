@@ -657,6 +657,9 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 						CGPoint lastPosition = NSPointToCGPoint([[pathAy objectAtIndex:idx - 1] pointValue]);
 						LineRectLayer * lineLayer = [LineRectLayer layerAtPosition:lastPosition];
 						CGRect theBounds = [lineLayer getBoundsAndSetTransformationToPoint:curPoint];
+						theBounds.size.width += 14.0;
+						lastPosition.x -= 7.0;
+						lineLayer.position = lastPosition;
 						CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"bounds"];
 						animation.toValue = [NSValue valueWithRect:NSRectFromCGRect(theBounds)];
 						animation.fromValue = [NSValue valueWithRect:NSRectFromCGRect(lineLayer.bounds)];
@@ -686,6 +689,9 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 					CGPoint lastPosition = NSPointToCGPoint([[pathAy objectAtIndex:idx - 1] pointValue]);
 					LineRectLayer * lineLayer = [LineRectLayer layerAtPosition:lastPosition];
 					CGRect theBounds = [lineLayer getBoundsAndSetTransformationToPoint:curPoint];
+					theBounds.size.width += 14.0;
+					lastPosition.x -= 7.0;
+					lineLayer.position = lastPosition;
 					CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"bounds"];
 					animation.toValue = [NSValue valueWithRect:NSRectFromCGRect(theBounds)];
 					animation.fromValue = [NSValue valueWithRect:NSRectFromCGRect(lineLayer.bounds)];

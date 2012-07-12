@@ -26,7 +26,7 @@
 	self.backgroundColor = theColor;
 	CGColorRelease(theColor);
 	
-//	self.cornerRadius = 7.0;
+	self.cornerRadius = 7.0;
 	self.bounds = CGRectMake(0.0, 0.0, 0.0, 14.0);
 	
 	return self;
@@ -39,7 +39,7 @@
 	CGPoint abVec = CGPointMake(aPoint.x - curPosition.x, aPoint.y - curPosition.y);
 	double rotationAng = 0.0;
 	if ( abVec.x == 0.0 ) {
-		rotationAng = abVec.y > 0.0 ? 0.0 : M_PI;
+		rotationAng = abVec.y > 0.0 ? M_PI_2 : 0.0;
 	} else {
 		rotationAng = atan(abVec.y / abVec.x);
 	}
