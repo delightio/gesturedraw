@@ -363,11 +363,11 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 		// save the index value
 		[pathProxy.pathStartSegmentIndexSet addIndex:[pathProxy.pathTimes count] - 1];
 	} else if ( ttype == UITouchPhaseCancelled || ttype == UITouchPhaseEnded ) {
-//		if ( curTimeItval - pathProxy.startTime < DL_MINIMUM_DURATION ) {
-//			// we need to show the dot for longer time so that it's visually visible
-//			curTimeItval = pathProxy.startTime + DL_MINIMUM_DURATION;
-//			touchTime = [NSNumber numberWithDouble:curTimeItval];
-//		}
+		//		if ( curTimeItval - pathProxy.startTime < DL_MINIMUM_DURATION ) {
+		//			// we need to show the dot for longer time so that it's visually visible
+		//			curTimeItval = pathProxy.startTime + DL_MINIMUM_DURATION;
+		//			touchTime = [NSNumber numberWithDouble:curTimeItval];
+		//		}
 		// fade out effect
 		// set paths
 		[pathProxy.pathTimes addObject:touchTime];
@@ -616,8 +616,8 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	NSNumber * zeroNum = (__bridge NSNumber *)kCFBooleanFalse;
 	NSNumber * oneNum = [NSNumber numberWithDouble:0.65];//(__bridge NSNumber *)kCFBooleanTrue;
 	// just in case if there's any bug or reason that the onscreenLayerBuffer still contains some layers
-	@autoreleasepool {
-		for (TouchPathProxy * proxyObj in dotPositionBuffer) {
+	for (TouchPathProxy * proxyObj in dotPositionBuffer) {
+		@autoreleasepool {
 			// transverse all paths
 			NSArray * pathAy = proxyObj.pathValues;
 			BOOL needCreateContainerLayer = NO;
@@ -658,7 +658,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 						LineRectLayer * lineLayer = [LineRectLayer layerAtPosition:lastPosition];
 						CGRect theBounds = [lineLayer getBoundsAndSetTransformationToPoint:curPoint];
 						theBounds.size.width += 14.0;
-//						lastPosition.x -= 7.0;
+						//						lastPosition.x -= 7.0;
 						lineLayer.position = lastPosition;
 						CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"bounds"];
 						animation.toValue = [NSValue valueWithRect:NSRectFromCGRect(theBounds)];
@@ -681,7 +681,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 						
 						[gestureLayer addAnimation:opacAnimation forKey:nil];
 						gestureLayer = nil;
-//						[prnLayer addSublayer:lineLayer];
+						//						[prnLayer addSublayer:lineLayer];
 					}
 				} else {
 					// points in the middle, create new segment
@@ -690,7 +690,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 					LineRectLayer * lineLayer = [LineRectLayer layerAtPosition:lastPosition];
 					CGRect theBounds = [lineLayer getBoundsAndSetTransformationToPoint:curPoint];
 					theBounds.size.width += 14.0;
-//					lastPosition.x -= 7.0;
+					//					lastPosition.x -= 7.0;
 					lineLayer.position = lastPosition;
 					CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"bounds"];
 					animation.toValue = [NSValue valueWithRect:NSRectFromCGRect(theBounds)];
@@ -711,7 +711,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 						needCreateContainerLayer = NO;
 					}
 					[gestureLayer addSublayer:lineLayer];
-//					[prnLayer addSublayer:lineLayer];
+					//					[prnLayer addSublayer:lineLayer];
 				}
 				idx++;
 			}
@@ -802,7 +802,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 			break;
 	}
 	aLayer.transform = CATransform3DRotate(origTransform, r, 0.0, 0.0, 1.0);
-//	aLayer.transform = CATransform3DConcat(origTransform, CATransform3DMakeAffineTransform(CGAffineTransformRotate(CGAffineTransformIdentity, r)));
+	//	aLayer.transform = CATransform3DConcat(origTransform, CATransform3DMakeAffineTransform(CGAffineTransformRotate(CGAffineTransformIdentity, r)));
 }
 
 - (CGFloat)majorOrientationRotationAngle {
