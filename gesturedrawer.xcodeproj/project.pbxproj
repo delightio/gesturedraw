@@ -21,6 +21,12 @@
 		A92D6A781582B7B20078866E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9F1E833155C34A3001C0C37 /* Foundation.framework */; };
 		A92D6A7B1582B7B20078866E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A92D6A7A1582B7B20078866E /* main.m */; };
 		A92D6A7F1582B7B20078866E /* majororientation.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = A92D6A7E1582B7B20078866E /* majororientation.1 */; };
+		A932E70E15AB3E840087FEFC /* RenderingUnitV03.m in Sources */ = {isa = PBXBuildFile; fileRef = A932E70D15AB3E840087FEFC /* RenderingUnitV03.m */; };
+		A932E70F15AB3E840087FEFC /* RenderingUnitV03.m in Sources */ = {isa = PBXBuildFile; fileRef = A932E70D15AB3E840087FEFC /* RenderingUnitV03.m */; };
+		A932E71315AB410D0087FEFC /* TouchPathProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = A932E71215AB410D0087FEFC /* TouchPathProxy.m */; };
+		A932E71415AB410D0087FEFC /* TouchPathProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = A932E71215AB410D0087FEFC /* TouchPathProxy.m */; };
+		A932E71715AB6F000087FEFC /* LineRectLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A932E71615AB6F000087FEFC /* LineRectLayer.m */; };
+		A932E71815AB6F000087FEFC /* LineRectLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A932E71615AB6F000087FEFC /* LineRectLayer.m */; };
 		A93E65411575959C00AA1F20 /* RenderingUnitV02.m in Sources */ = {isa = PBXBuildFile; fileRef = A93E65401575959C00AA1F20 /* RenderingUnitV02.m */; };
 		A93E65421575959C00AA1F20 /* RenderingUnitV02.m in Sources */ = {isa = PBXBuildFile; fileRef = A93E65401575959C00AA1F20 /* RenderingUnitV02.m */; };
 		A93E65431575959C00AA1F20 /* RenderingUnitV02.m in Sources */ = {isa = PBXBuildFile; fileRef = A93E65401575959C00AA1F20 /* RenderingUnitV02.m */; };
@@ -101,6 +107,12 @@
 		A92D6A7A1582B7B20078866E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		A92D6A7D1582B7B20078866E /* majororientation-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "majororientation-Prefix.pch"; sourceTree = "<group>"; };
 		A92D6A7E1582B7B20078866E /* majororientation.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = majororientation.1; sourceTree = "<group>"; };
+		A932E70C15AB3E840087FEFC /* RenderingUnitV03.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderingUnitV03.h; sourceTree = "<group>"; };
+		A932E70D15AB3E840087FEFC /* RenderingUnitV03.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderingUnitV03.m; sourceTree = "<group>"; };
+		A932E71115AB410D0087FEFC /* TouchPathProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TouchPathProxy.h; sourceTree = "<group>"; };
+		A932E71215AB410D0087FEFC /* TouchPathProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TouchPathProxy.m; sourceTree = "<group>"; };
+		A932E71515AB6F000087FEFC /* LineRectLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LineRectLayer.h; sourceTree = "<group>"; };
+		A932E71615AB6F000087FEFC /* LineRectLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LineRectLayer.m; sourceTree = "<group>"; };
 		A93E653F1575959C00AA1F20 /* RenderingUnitV02.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderingUnitV02.h; sourceTree = "<group>"; };
 		A93E65401575959C00AA1F20 /* RenderingUnitV02.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderingUnitV02.m; sourceTree = "<group>"; };
 		A93E6545157595BD00AA1F20 /* RenderingUnitV01.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderingUnitV01.h; sourceTree = "<group>"; };
@@ -286,12 +298,18 @@
 				A99DED39156509020022DD0F /* TouchLayer.m */,
 				A9967767156B99EC00A55D7B /* RenderingUnit.h */,
 				A9967768156B99EC00A55D7B /* RenderingUnit.m */,
+				A932E70C15AB3E840087FEFC /* RenderingUnitV03.h */,
+				A932E70D15AB3E840087FEFC /* RenderingUnitV03.m */,
 				A93E653F1575959C00AA1F20 /* RenderingUnitV02.h */,
 				A93E65401575959C00AA1F20 /* RenderingUnitV02.m */,
 				A93E6545157595BD00AA1F20 /* RenderingUnitV01.h */,
 				A93E6546157595BD00AA1F20 /* RenderingUnitV01.m */,
 				A96D6AEE157802DF00AEC72C /* RectLayer.h */,
 				A96D6AEF157802E000AEC72C /* RectLayer.m */,
+				A932E71115AB410D0087FEFC /* TouchPathProxy.h */,
+				A932E71215AB410D0087FEFC /* TouchPathProxy.m */,
+				A932E71515AB6F000087FEFC /* LineRectLayer.h */,
+				A932E71615AB6F000087FEFC /* LineRectLayer.m */,
 			);
 			path = gesturedrawer;
 			sourceTree = "<group>";
@@ -496,6 +514,9 @@
 				A93E65411575959C00AA1F20 /* RenderingUnitV02.m in Sources */,
 				A93E6547157595BD00AA1F20 /* RenderingUnitV01.m in Sources */,
 				A96D6AF0157802E000AEC72C /* RectLayer.m in Sources */,
+				A932E70E15AB3E840087FEFC /* RenderingUnitV03.m in Sources */,
+				A932E71315AB410D0087FEFC /* TouchPathProxy.m in Sources */,
+				A932E71715AB6F000087FEFC /* LineRectLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -510,6 +531,9 @@
 				A93E65421575959C00AA1F20 /* RenderingUnitV02.m in Sources */,
 				A93E6548157595BD00AA1F20 /* RenderingUnitV01.m in Sources */,
 				A96D6AF2157802EA00AEC72C /* RectLayer.m in Sources */,
+				A932E70F15AB3E840087FEFC /* RenderingUnitV03.m in Sources */,
+				A932E71415AB410D0087FEFC /* TouchPathProxy.m in Sources */,
+				A932E71815AB6F000087FEFC /* LineRectLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -725,6 +749,7 @@
 				A92D6A821582B7B20078866E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		A9F1E829155C34A3001C0C37 /* Build configuration list for PBXProject "gesturedrawer" */ = {
 			isa = XCConfigurationList;

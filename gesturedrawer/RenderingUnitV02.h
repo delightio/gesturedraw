@@ -25,6 +25,10 @@ typedef enum {
     UIInterfaceOrientationLandscapeRight     = UIDeviceOrientationLandscapeLeft
 } UIInterfaceOrientation;
 
+extern NSString * DLDeviceOrientationKey;
+extern NSString * DLInterfaceOrientationKey;
+extern NSString * DLOrientationTimeKey;
+
 @interface RenderingUnitV02 : RenderingUnit {
 	__strong NSMutableArray * rectLayerBuffer;
 	__strong NSMutableArray * dotLayerBuffer;
