@@ -56,7 +56,7 @@
 		rotationAng = (M_PI - atan(abVec.y / abVec.x));
 	} else {
 		// 4th quadrant
-		rotationAng = atan(abVec.y / abVec.x);
+		rotationAng = -atan(abVec.y / abVec.x);
 	}
 //	if ( abVec.x == 0.0 ) {
 //		rotationAng = abVec.y > 0.0 ? M_PI_2 : 0.0;

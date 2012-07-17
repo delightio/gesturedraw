@@ -614,7 +614,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 		prevIdx = idx++;
 	}
 	NSNumber * zeroNum = (__bridge NSNumber *)kCFBooleanFalse;
-	NSNumber * oneNum = (__bridge NSNumber *)kCFBooleanTrue;
+	NSNumber * oneNum = [NSNumber numberWithDouble:0.65];//(__bridge NSNumber *)kCFBooleanTrue;
 	// just in case if there's any bug or reason that the onscreenLayerBuffer still contains some layers
 	@autoreleasepool {
 		for (TouchPathProxy * proxyObj in dotPositionBuffer) {
@@ -658,7 +658,7 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 						LineRectLayer * lineLayer = [LineRectLayer layerAtPosition:lastPosition];
 						CGRect theBounds = [lineLayer getBoundsAndSetTransformationToPoint:curPoint];
 						theBounds.size.width += 14.0;
-						lastPosition.x -= 7.0;
+//						lastPosition.x -= 7.0;
 						lineLayer.position = lastPosition;
 						CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"bounds"];
 						animation.toValue = [NSValue valueWithRect:NSRectFromCGRect(theBounds)];
