@@ -52,6 +52,11 @@ int main(int argc, char * argv[])
 			NSLog(@"usage: gesturedrawer -f movie_file -p plist_file -d destination_file -o orientation_file");
 			return 0;
 		}
+		// check if file exists.
+		NSFileManager * fm = [NSFileManager defaultManager];
+		if ( [fm fileExistsAtPath:dstFilePath] ) {
+			[fm removeItemAtPath:dstFilePath error:nil];
+		}
 		// start the processing pipeline
 		// read the touches
 		NSData * propData = [NSData dataWithContentsOfFile:plistFilePath];
