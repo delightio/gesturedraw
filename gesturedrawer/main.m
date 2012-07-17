@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
 #import "RenderingUnitV01.h"
-#import "RenderingUnitV02.h"
+#import "RenderingUnitV03.h"
 
 int main(int argc, char * argv[])
 {
@@ -72,7 +72,7 @@ int main(int argc, char * argv[])
 		if ( [fmtVersion isEqualToString:@"0.1"] ) {
 			rndUnit = [[RenderingUnitV01 alloc] initWithVideoAtPath:vdoFilePath destinationPath:dstFilePath touchesPropertyList:touchInfo];
 		} else if ( [fmtVersion isEqualToString:@"0.2"] ) {
-			RenderingUnitV02 * v2RndUnit = [[RenderingUnitV02 alloc] initWithVideoAtPath:vdoFilePath destinationPath:dstFilePath touchesPropertyList:touchInfo];
+			RenderingUnitV03 * v3RndUnit = [[RenderingUnitV03 alloc] initWithVideoAtPath:vdoFilePath destinationPath:dstFilePath touchesPropertyList:touchInfo];
 			NSData * propData = nil;
 			if ( oriFilePath ) {
 				propData = [NSData dataWithContentsOfFile:oriFilePath];
@@ -81,9 +81,9 @@ int main(int argc, char * argv[])
 				NSPropertyListFormat listFmt;
 				NSError * err;
 				NSDictionary * dict = [NSPropertyListSerialization propertyListWithData:propData options:0 format:&listFmt error:&err];
-				[v2RndUnit checkMajorOrientationForTrack:[dict objectForKey:@"orientationChanges"]];
+				[v3RndUnit checkMajorOrientationForTrack:[dict objectForKey:@"orientationChanges"]];
 			}
-			rndUnit = v2RndUnit;
+			rndUnit = v3RndUnit;
 		} else {
 			NSLog(@"wrong plist file version, expect version 0.1 or 0.2");
 			[NSApp terminate:nil];
