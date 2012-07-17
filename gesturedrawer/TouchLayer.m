@@ -24,27 +24,31 @@
 	
 	[self setOpacity:0.0];
 	
-	NSImage * img = [NSImage imageNamed:@"dot"];
-	if ( img == nil ) {
-		// try opening the dot file from library folder
-		NSURL * baseURL = [[[NSFileManager defaultManager] URLsForDirectory:NSApplicationSupportDirectory inDomains:NSLocalDomainMask] objectAtIndex:0];
-		NSURL * imgURL = [baseURL URLByAppendingPathComponent:@"gesturedrawer/dot.png"];
-		img = [[NSImage alloc] initWithContentsOfURL:imgURL];
-		if ( img == nil ) {
-			NSLog(@"Can't load image file at %@\nExport aborted", imgURL);
-			exit(-1);
-		}
-	}
+//	NSImage * img = [NSImage imageNamed:@"dot"];
+//	if ( img == nil ) {
+//		// try opening the dot file from library folder
+//		NSURL * baseURL = [[[NSFileManager defaultManager] URLsForDirectory:NSApplicationSupportDirectory inDomains:NSLocalDomainMask] objectAtIndex:0];
+//		NSURL * imgURL = [baseURL URLByAppendingPathComponent:@"gesturedrawer/dot.png"];
+//		img = [[NSImage alloc] initWithContentsOfURL:imgURL];
+//		if ( img == nil ) {
+//			NSLog(@"Can't load image file at %@\nExport aborted", imgURL);
+//			exit(-1);
+//		}
+//	}
 	_needFadeIn = YES;
-	self.contents = (id)img;
-	self.bounds = CGRectMake(0.0, 0.0, img.size.width, img.size.height);
+//	self.contents = (id)img;
+	self.bounds = CGRectMake(0.0, 0.0, 22.0, 22.0);
+	CGColorRef theColor = CGColorCreateGenericRGB(0.0, 0.0, 1.0, 1.0);
+	self.backgroundColor = theColor;
+	CGColorRelease(theColor);
+	self.cornerRadius = 11.0;
 
 	_pathKeyTimes = [[NSMutableArray alloc] initWithCapacity:10];
 	_opacityKeyTimes = [[NSMutableArray alloc] initWithCapacity:10];
 	_pathValues = [[NSMutableArray alloc] initWithCapacity:10];
 	_opacityValues = [[NSMutableArray alloc] initWithCapacity:10];
 	_previousLocation = NSMakePoint(-9999.0, -9999.0);
-	[self setShouldRasterize:YES];
+//	[self setShouldRasterize:YES];
 	
 	return self;
 }
