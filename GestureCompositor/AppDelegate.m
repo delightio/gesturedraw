@@ -157,6 +157,11 @@
 }
 
 - (IBAction)exportVideo:(id)sender {
+	// check if file exists.
+	NSFileManager * fm = [NSFileManager defaultManager];
+	if ( [fm fileExistsAtPath:_exportPath] ) {
+		[fm removeItemAtPath:_exportPath error:nil];
+	}
 	RenderingUnit * rndUnit = nil;
 	NSString * fmtVersion = [_touchInfo objectForKey:@"formatVersion"];
 	if ( [fmtVersion isEqualToString:@"0.1"] ) {
