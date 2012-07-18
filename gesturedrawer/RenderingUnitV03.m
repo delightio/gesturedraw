@@ -291,46 +291,40 @@ NS_INLINE double DistanceBetween(CGPoint pointA, CGPoint pointB) {
 	NSNumber * touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
 	// set layer animation
 	if ( ttype == UITouchPhaseBegan || shapeLayer.needFadeIn ) {
-		shapeLayer.touchCount = shapeLayer.touchCount + 1;
-		if ( shapeLayer.touchCount == 1 ) {
-			// fade it in
-			shapeLayer.startTime = curTimeItval;
-			// fade in effect
-			// effect start time
-			fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval - DL_NORMAL_OPACITY_ANIMATION_DURATION) / videoDuration];
-			[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
-			// effect end time
-			[shapeLayer.opacityKeyTimes addObject:touchTime];
-			[shapeLayer.opacityValues addObject:zeroNum];		// start value
-			[shapeLayer.opacityValues addObject:oneNum];		// end value
-			// make sure the rect is shown when it starts to fade in
-			[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
-			[shapeLayer.pathValues addObject:curFrameVal];
-			// make sure the dot is "in" the location when animation starts
-			shapeLayer.needFadeIn = NO;
-		}
+		// fade it in
+		shapeLayer.startTime = curTimeItval;
+		// fade in effect
+		// effect start time
+		fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval - DL_NORMAL_OPACITY_ANIMATION_DURATION) / videoDuration];
+		[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
+		// effect end time
+		[shapeLayer.opacityKeyTimes addObject:touchTime];
+		[shapeLayer.opacityValues addObject:zeroNum];		// start value
+		[shapeLayer.opacityValues addObject:oneNum];		// end value
+		// make sure the rect is shown when it starts to fade in
+		[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
+		[shapeLayer.pathValues addObject:curFrameVal];
+		// make sure the dot is "in" the location when animation starts
+		shapeLayer.needFadeIn = NO;
 	} else if ( ttype == UITouchPhaseCancelled || ttype == UITouchPhaseEnded ) {
-		shapeLayer.touchCount = shapeLayer.touchCount - 1;
-		if ( shapeLayer.touchCount == 0 ) {
-			// calculate minimum time
-			if ( curTimeItval - shapeLayer.startTime < DL_NORMAL_OPACITY_ANIMATION_DURATION ) {
-				// we need to show the dot for longer time so that it's visually visible
-				curTimeItval = shapeLayer.startTime + DL_NORMAL_OPACITY_ANIMATION_DURATION;
-				touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
-			}
-			// fade out effect
-			// effect start time
-			[shapeLayer.opacityKeyTimes addObject:touchTime];
-			// effect end time
-			fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval + DL_NORMAL_OPACITY_ANIMATION_DURATION) / videoDuration];
-			[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
-			[shapeLayer.opacityValues addObject:oneNum];		// start value
-			[shapeLayer.opacityValues addObject:zeroNum];		// end value
-			// keep rect stationary for fade out effect
-			[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
-			[shapeLayer.pathValues addObject:curFrameVal];
-			shapeLayer.needFadeIn = YES;
+		// calculate minimum time
+		if ( curTimeItval - shapeLayer.startTime < DL_NORMAL_OPACITY_ANIMATION_DURATION ) {
+			// we need to show the dot for longer time so that it's visually visible
+			curTimeItval = shapeLayer.startTime + DL_NORMAL_OPACITY_ANIMATION_DURATION;
+			touchTime = [NSNumber numberWithDouble:curTimeItval / videoDuration];
 		}
+		// fade out effect
+		// effect start time
+		[shapeLayer.opacityKeyTimes addObject:touchTime];
+		// effect end time
+		fadeTimeNum = [NSNumber numberWithDouble:(curTimeItval + DL_NORMAL_OPACITY_ANIMATION_DURATION) / videoDuration];
+		[shapeLayer.opacityKeyTimes addObject:fadeTimeNum];
+		[shapeLayer.opacityValues addObject:oneNum];		// start value
+		[shapeLayer.opacityValues addObject:zeroNum];		// end value
+		// keep rect stationary for fade out effect
+		[shapeLayer.pathKeyTimes addObject:fadeTimeNum];
+		[shapeLayer.pathValues addObject:curFrameVal];
+		shapeLayer.needFadeIn = YES;
 	} else {
 		// move the rect
 		[shapeLayer.pathKeyTimes addObject:touchTime];
